@@ -71,7 +71,7 @@ class FloatingBottomNavigationBar extends StatelessWidget {
         ).copyWith(bottom: 24),
         child: Align(
           child: Material(
-            color: cs.surface,
+            color: cs.onPrimary,
             borderRadius: BorderRadius.circular(50),
             elevation: 8,
             shadowColor: Colors.black38,
