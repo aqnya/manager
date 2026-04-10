@@ -49,7 +49,7 @@ class _StatusCard extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
-              verticalAlignment: Alignment.center,
+              verticalAlignment: CrossAxisAlignment.center,
               children: [
                 // KT: size=50dp, background(contentColor.copy(alpha=opacity)), glow(alpha=0.45f)
                 _GlowCircle(
