@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'floating_navigation_bar.dart'; 
 
 void main() {
   runApp(const MyApp());
@@ -60,33 +61,35 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // 开启 extendBody 让内容可以延伸到悬浮底栏的下方
+      extendBody: true, 
       body: IndexedStack(
         index: _index,
         children: _pages,
       ),
-
-      bottomNavigationBar: NavigationBar(
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+      
+      // 替换为自定义的 FloatingNavigationBar
+      bottomNavigationBar: FloatingNavigationBar(
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         selectedIndex: _index,
-
         onDestinationSelected: (index) {
           setState(() {
             _index = index;
           });
         },
-
+        // 替换为自定义的 FloatingNavigationDestination
         destinations: const [
-          NavigationDestination(
+          FloatingNavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
             label: '首页',
           ),
-          NavigationDestination(
+          FloatingNavigationDestination(
             icon: Icon(Icons.history_outlined),
             selectedIcon: Icon(Icons.history),
             label: '历史',
           ),
-          NavigationDestination(
+          FloatingNavigationDestination(
             icon: Icon(Icons.settings_outlined),
             selectedIcon: Icon(Icons.settings),
             label: '设置',
