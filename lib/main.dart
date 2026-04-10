@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:dynamic_color/dynamic_color.dart';
+
 import 'screen/home/home_screen.dart';
 import 'screen/home/home_view_model.dart';
 
@@ -277,14 +279,33 @@ class _Placeholder extends StatelessWidget {
 void main() => runApp(
   Provider<HomeViewModel>(
     create: (_) => HomeViewModel.init(),
-    child: MaterialApp(
-      title: 'NekoSU',
-      theme: ThemeData(
-      useMaterial3: true, 
-      colorSchemeSeed: Colors.deepPurple,
-      textTheme: GoogleFonts.notoSansScTextTheme(),
-      ),
-      home: const MainScreen(navBarStyle: NavBarStyle.floating),
+    child: DynamicColorBuilder(
+      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+        return MaterialApp(
+          title: 'NekoSU',
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme:
+                lightDynamic ??
+                ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+            textTheme: GoogleFonts.notoSansScTextTheme(),
+          ),
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            colorScheme:
+                darkDynamic ??
+                ColorScheme.fromSeed(
+                  seedColor: Colors.deepPurple,
+                  brightness: Brightness.dark,
+                ),
+            textTheme: GoogleFonts.notoSansScTextTheme(
+              ThemeData(brightness: Brightness.dark).textTheme,
+            ),
+          ),
+          themeMode: ThemeMode.system,
+          home: const MainScreen(navBarStyle: NavBarStyle.floating),
+        );
+      },
     ),
   ),
 );
