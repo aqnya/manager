@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'floating_navigation_bar.dart'; 
+import 'home.dart';
 
 void main() {
   runApp(const MyApp());
@@ -47,7 +49,7 @@ class _MainPageState extends State<MainPage> {
   int _index = 0;
 
   final List<Widget> _pages = [
-    const CounterPage(),
+    const RootHomePage(),
     const Center(child: Text("历史页面")),
     const Center(child: Text("设置页面")),
   ];
