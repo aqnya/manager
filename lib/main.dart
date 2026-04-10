@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'screen/home/home_screen.dart';
 import 'screen/home/home_view_model.dart';
 
@@ -278,7 +279,11 @@ void main() => runApp(
     create: (_) => HomeViewModel.init(),
     child: MaterialApp(
       title: 'NekoSU',
-      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
+      theme: ThemeData(
+      useMaterial3: true, 
+      colorSchemeSeed: Colors.deepPurple,
+      textTheme: GoogleFonts.notoSansScTextTheme(),
+      ),
       home: const MainScreen(navBarStyle: NavBarStyle.floating),
     ),
   ),
