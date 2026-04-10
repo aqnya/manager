@@ -294,7 +294,7 @@ void main() => runApp(
           theme: ThemeData(
             useMaterial3: true,
             colorScheme: lightScheme,
-            cardTheme: CardTheme(
+            cardTheme: CardThemeData(
               elevation: 0,
               color: lightScheme.surfaceContainer,
               shape: RoundedRectangleBorder(
@@ -305,7 +305,7 @@ void main() => runApp(
           darkTheme: ThemeData(
             useMaterial3: true,
             colorScheme: darkScheme,
-            cardTheme: CardTheme(
+            cardTheme: CardThemeData(
               elevation: 0,
               color: darkScheme.surfaceContainer,
               shape: RoundedRectangleBorder(
