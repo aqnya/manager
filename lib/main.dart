@@ -18,14 +18,39 @@ class _NavItem {
 }
 
 const List<_NavItem> _navItems = [
-  _NavItem(route: AppRoute.home,      label: 'Home',     selectedIcon: Icons.home,          unselectedIcon: Icons.home_outlined),
-  _NavItem(route: AppRoute.history,   label: 'Apps',     selectedIcon: Icons.apps,          unselectedIcon: Icons.apps_outlined),
-  _NavItem(route: AppRoute.fmacRules, label: 'Rules',    selectedIcon: Icons.rule,          unselectedIcon: Icons.rule_outlined),
-  _NavItem(route: AppRoute.settings,  label: 'Settings', selectedIcon: Icons.settings,      unselectedIcon: Icons.settings_outlined),
+  _NavItem(
+    route: AppRoute.home,
+    label: 'Home',
+    selectedIcon: Icons.home,
+    unselectedIcon: Icons.home_outlined,
+  ),
+  _NavItem(
+    route: AppRoute.history,
+    label: 'Apps',
+    selectedIcon: Icons.apps,
+    unselectedIcon: Icons.apps_outlined,
+  ),
+  _NavItem(
+    route: AppRoute.fmacRules,
+    label: 'Rules',
+    selectedIcon: Icons.rule,
+    unselectedIcon: Icons.rule_outlined,
+  ),
+  _NavItem(
+    route: AppRoute.settings,
+    label: 'Settings',
+    selectedIcon: Icons.settings,
+    unselectedIcon: Icons.settings_outlined,
+  ),
 ];
 
 class FloatingBottomNavigationBar extends StatelessWidget {
-  const FloatingBottomNavigationBar({super.key, required this.currentRoute, required this.items, required this.onTap});
+  const FloatingBottomNavigationBar({
+    super.key,
+    required this.currentRoute,
+    required this.items,
+    required this.onTap,
+  });
   final AppRoute currentRoute;
   final List<_NavItem> items;
   final ValueChanged<AppRoute> onTap;
@@ -35,7 +60,9 @@ class FloatingBottomNavigationBar extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24).copyWith(bottom: 24),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 24,
+        ).copyWith(bottom: 24),
         child: Align(
           child: Material(
             color: cs.surfaceContainerHighest,
@@ -46,11 +73,15 @@ class FloatingBottomNavigationBar extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: items.map((item) => _PillNavItem(
-                  item: item,
-                  selected: currentRoute == item.route,
-                  onTap: () => onTap(item.route),
-                )).toList(),
+                children: items
+                    .map(
+                      (item) => _PillNavItem(
+                        item: item,
+                        selected: currentRoute == item.route,
+                        onTap: () => onTap(item.route),
+                      ),
+                    )
+                    .toList(),
               ),
             ),
           ),
@@ -61,7 +92,11 @@ class FloatingBottomNavigationBar extends StatelessWidget {
 }
 
 class _PillNavItem extends StatelessWidget {
-  const _PillNavItem({required this.item, required this.selected, required this.onTap});
+  const _PillNavItem({
+    required this.item,
+    required this.selected,
+    required this.onTap,
+  });
   final _NavItem item;
   final bool selected;
   final VoidCallback onTap;
@@ -96,7 +131,8 @@ class _PillNavItem extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 6),
                       child: Text(
                         item.label,
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(color: cs.onPrimaryContainer),
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(color: cs.onPrimaryContainer),
                         maxLines: 1,
                         softWrap: false,
                         overflow: TextOverflow.visible,
@@ -112,22 +148,33 @@ class _PillNavItem extends StatelessWidget {
 }
 
 class NormalBottomNavigationBar extends StatelessWidget {
-  const NormalBottomNavigationBar({super.key, required this.currentRoute, required this.items, required this.onTap});
+  const NormalBottomNavigationBar({
+    super.key,
+    required this.currentRoute,
+    required this.items,
+    required this.onTap,
+  });
   final AppRoute currentRoute;
   final List<_NavItem> items;
   final ValueChanged<AppRoute> onTap;
 
   @override
   Widget build(BuildContext context) {
-    final idx = items.indexWhere((e) => e.route == currentRoute).clamp(0, items.length - 1);
+    final idx = items
+        .indexWhere((e) => e.route == currentRoute)
+        .clamp(0, items.length - 1);
     return NavigationBar(
       selectedIndex: idx,
       onDestinationSelected: (i) => onTap(items[i].route),
-      destinations: items.map((item) => NavigationDestination(
-        icon: Icon(item.unselectedIcon),
-        selectedIcon: Icon(item.selectedIcon),
-        label: item.label,
-      )).toList(),
+      destinations: items
+          .map(
+            (item) => NavigationDestination(
+              icon: Icon(item.unselectedIcon),
+              selectedIcon: Icon(item.selectedIcon),
+              label: item.label,
+            ),
+          )
+          .toList(),
     );
   }
 }
@@ -143,15 +190,25 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   AppRoute _current = AppRoute.home;
 
-  static const _topLevel = {AppRoute.home, AppRoute.history, AppRoute.fmacRules, AppRoute.settings};
+  static const _topLevel = {
+    AppRoute.home,
+    AppRoute.history,
+    AppRoute.fmacRules,
+    AppRoute.settings,
+  };
 
-  void _navigate(AppRoute r) { if (_current != r) setState(() => _current = r); }
+  void _navigate(AppRoute r) {
+    if (_current != r) setState(() => _current = r);
+  }
 
   Widget _page() => switch (_current) {
-    AppRoute.home      => const _Placeholder('Home'),
-    AppRoute.history   => const _Placeholder('Apps / History'),
+    AppRoute.home => HomeScreen(
+      onNavigateToApps: () => _navigate(AppRoute.history),
+      onNavigateToRules: () => _navigate(AppRoute.fmacRules),
+    ),
+    AppRoute.history => const _Placeholder('Apps / History'),
     AppRoute.fmacRules => const _Placeholder('FMAC Rules'),
-    AppRoute.settings  => const _Placeholder('Settings'),
+    AppRoute.settings => const _Placeholder('Settings'),
   };
 
   @override
@@ -171,7 +228,13 @@ class _MainScreenState extends State<MainScreen> {
 
     return Scaffold(
       bottomNavigationBar: !floating && show
-          ? animatedBar(NormalBottomNavigationBar(currentRoute: _current, items: _navItems, onTap: _navigate))
+          ? animatedBar(
+              NormalBottomNavigationBar(
+                currentRoute: _current,
+                items: _navItems,
+                onTap: _navigate,
+              ),
+            )
           : null,
       body: Stack(
         children: [
@@ -181,8 +244,16 @@ class _MainScreenState extends State<MainScreen> {
           ),
           if (floating)
             Positioned(
-              left: 0, right: 0, bottom: 0,
-              child: animatedBar(FloatingBottomNavigationBar(currentRoute: _current, items: _navItems, onTap: _navigate)),
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: animatedBar(
+                FloatingBottomNavigationBar(
+                  currentRoute: _current,
+                  items: _navItems,
+                  onTap: _navigate,
+                ),
+              ),
             ),
         ],
       ),
@@ -199,8 +270,13 @@ class _Placeholder extends StatelessWidget {
       Center(child: Text(label, style: Theme.of(context).textTheme.titleLarge));
 }
 
-void main() => runApp(MaterialApp(
-  title: 'NekoSU',
-  theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
-  home: const MainScreen(navBarStyle: NavBarStyle.floating),
-));
+void main() => runApp(
+  Provider<HomeViewModel>(
+    create: (_) => HomeViewModel.init(),
+    child: MaterialApp(
+      title: 'NekoSU',
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
+      home: const MainScreen(navBarStyle: NavBarStyle.floating),
+    ),
+  ),
+);
