@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'ncore.dart';
+import '../../ncore.dart';
 
 enum InstallStatus { installed, notInstalled }
 
