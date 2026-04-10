@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,17 +8,35 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static const _defaultColorSeed = Colors.blueAccent;
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-        ),
-      ),
-      home: const MainPage(),
+    return DynamicColorBuilder(
+      builder: (lightDynamic, darkDynamic) {
+        final lightScheme = ColorScheme.fromSeed(
+          seedColor: _defaultColorSeed,
+        );
+
+        final darkScheme = ColorScheme.fromSeed(
+          seedColor: _defaultColorSeed,
+          brightness: Brightness.dark,
+        );
+
+        return MaterialApp(
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: lightDynamic ?? lightScheme,
+          ),
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            colorScheme: darkDynamic ?? darkScheme,
+          ),
+          themeMode: ThemeMode.system,
+          
+          home: const MainPage(),
+        );
+      },
     );
   }
 }
