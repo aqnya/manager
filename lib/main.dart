@@ -66,6 +66,7 @@ class _MainPageState extends State<MainPage> {
       ),
 
       bottomNavigationBar: NavigationBar(
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         selectedIndex: _index,
 
         onDestinationSelected: (index) {
