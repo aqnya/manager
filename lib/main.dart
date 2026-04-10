@@ -61,23 +61,20 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 开启 extendBody 让内容可以延伸到悬浮底栏的下方
       extendBody: true, 
       body: IndexedStack(
         index: _index,
         children: _pages,
       ),
       
-      // 替换为自定义的 FloatingNavigationBar
       bottomNavigationBar: FloatingNavigationBar(
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         selectedIndex: _index,
         onDestinationSelected: (index) {
           setState(() {
             _index = index;
           });
         },
-        // 替换为自定义的 FloatingNavigationDestination
         destinations: const [
           FloatingNavigationDestination(
             icon: Icon(Icons.home_outlined),
