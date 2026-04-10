@@ -25,14 +25,13 @@ class _StatusCard extends StatelessWidget {
     final contentColor = isInstalled
         ? cs.onPrimaryContainer
         : (isDark ? cs.onErrorContainer : cs.onError);
-        
+
     final icon = isInstalled ? Icons.check_circle : Icons.system_update;
     final title = isInstalled ? '已安装' : '未安装';
     final subtitle = isInstalled ? '服务运行正常' : '点击安装';
 
     const opacity = 0.06;
 
-    // 使用 AnimatedContainer 让状态切换时有平滑的颜色过渡
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
@@ -64,7 +63,8 @@ class _StatusCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
                               color: contentColor,
                               fontWeight: FontWeight.w600,
                             ),
@@ -73,8 +73,8 @@ class _StatusCard extends StatelessWidget {
                       Text(
                         subtitle,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: contentColor.withOpacity(0.7),
-                            ),
+                          color: contentColor.withOpacity(0.7),
+                        ),
                       ),
                     ],
                   ),
@@ -142,7 +142,11 @@ class _GlowCircle extends StatelessWidget {
 // ─────────────────────────────────────────────
 
 class _StatCard extends StatelessWidget {
-  const _StatCard({required this.label, required this.value, required this.onTap});
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
   final String label;
   final String value;
   final VoidCallback onTap;
@@ -168,16 +172,16 @@ class _StatCard extends StatelessWidget {
                 Text(
                   value,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: cs.onSurface,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: cs.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   label,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: cs.onSurface.withOpacity(0.55),
-                      ),
+                    color: cs.onSurface.withOpacity(0.55),
+                  ),
                 ),
               ],
             ),
@@ -263,7 +267,11 @@ class _DeviceInfoCard extends StatelessWidget {
 }
 
 class _DeviceInfoItem extends StatelessWidget {
-  const _DeviceInfoItem({required this.icon, required this.title, required this.value});
+  const _DeviceInfoItem({
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
   final IconData icon;
   final String title;
   final String value;
@@ -293,17 +301,17 @@ class _DeviceInfoItem extends StatelessWidget {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: cs.onSurface.withOpacity(0.55),
-                        fontWeight: FontWeight.w500,
-                      ),
+                    color: cs.onSurface.withOpacity(0.55),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: cs.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: cs.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
                   maxLines: 1, // 防止过长溢出破坏布局
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -333,17 +341,19 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const showRules = false;
     final vm = context.watch<HomeViewModel>();
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: const Text('NekoSU', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent, // 配合 scrolledUnderElevation 让滑动更通透
+        title: const Text(
+          'NekoSU',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.transparent,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
         scrolledUnderElevation: 0,
-        centerTitle: true, // MD3 风格居中或靠左均可，视需求而定
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(16, 12, 16, extraBottomPadding),
@@ -359,7 +369,9 @@ class HomeScreen extends StatelessWidget {
                     SnackBar(
                       content: const Text('服务运行正常'),
                       behavior: SnackBarBehavior.floating, // 悬浮 SnackBar 更现代
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   );
                 }
@@ -375,16 +387,6 @@ class HomeScreen extends StatelessWidget {
                     onTap: () => onNavigateToApps?.call(),
                   ),
                 ),
-                if (showRules) ...[
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _StatCard(
-                      label: 'FMAC 规则',
-                      value: vm.ruleCount.toString(),
-                      onTap: () => onNavigateToRules?.call(),
-                    ),
-                  ),
-                ],
               ],
             ),
             const SizedBox(height: 16),
