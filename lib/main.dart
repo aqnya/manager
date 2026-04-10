@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'screen/home/home_screen.dart';
+import 'screen/home/home_view_model.dart';
 
 enum AppRoute { home, history, fmacRules, settings }
 
