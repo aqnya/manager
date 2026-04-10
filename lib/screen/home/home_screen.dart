@@ -2,16 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'home_view_model.dart';
-import 'dart:ui' as ui;
 
 // ─────────────────────────────────────────────
 // StatusCard
-// KT: containerColor.copy(alpha = 0.75f)
-// KT: contentColor.copy(alpha = opacity=0.06f) 用于图标背景
-// KT: contentColor.copy(alpha = 0.45f) 用于 glow
-// KT: contentColor.copy(alpha = 0.7f)  用于 subtitle
-// KT: contentColor.copy(alpha = 0.6f)  用于箭头图标
-// KT: contentColor.copy(alpha = 0.35f) 用于箭头 glow (右侧小圆)
 // ─────────────────────────────────────────────
 
 class _StatusCard extends StatelessWidget {
@@ -22,36 +15,41 @@ class _StatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    // KT: background.luminance() < 0.5f
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isInstalled = status == InstallStatus.installed;
 
-    // KT: NOT_INSTALLED → dark=errorContainer/onErrorContainer, light=error/onError
-    final containerColor = status == InstallStatus.installed
+    // 颜色配置
+    final containerColor = isInstalled
         ? cs.primaryContainer
         : (isDark ? cs.errorContainer : cs.error);
-    final contentColor = status == InstallStatus.installed
+    final contentColor = isInstalled
         ? cs.onPrimaryContainer
         : (isDark ? cs.onErrorContainer : cs.onError);
-    final icon = status == InstallStatus.installed ? Icons.check_circle : Icons.system_update;
-    final title = status == InstallStatus.installed ? '已安装' : '未安装';
-    final subtitle = status == InstallStatus.installed ? '服务运行正常' : '点击安装';
+        
+    final icon = isInstalled ? Icons.check_circle : Icons.system_update;
+    final title = isInstalled ? '已安装' : '未安装';
+    final subtitle = isInstalled ? '服务运行正常' : '点击安装';
 
-    // KT: opacity = 0.06f (默认参数)
     const opacity = 0.06;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: Material(
-        // KT: containerColor.copy(alpha = 0.75f)
+    // 使用 AnimatedContainer 让状态切换时有平滑的颜色过渡
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      decoration: BoxDecoration(
         color: containerColor.withOpacity(0.75),
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Material(
+        color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
+          borderRadius: BorderRadius.circular(28),
           child: Padding(
             padding: const EdgeInsets.all(20),
-child: Row(
-  crossAxisAlignment: CrossAxisAlignment.center,
-  children: [
-                // KT: size=50dp, background(contentColor.copy(alpha=opacity)), glow(alpha=0.45f)
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
                 _GlowCircle(
                   color: contentColor,
                   glowAlpha: 0.45,
@@ -60,29 +58,37 @@ child: Row(
                   child: Icon(icon, color: contentColor, size: 24),
                 ),
                 const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // KT: titleMedium, FontWeight.SemiBold, color=contentColor
-                    Text(title,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: contentColor, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 3),
-                    // KT: bodySmall, contentColor.copy(alpha=0.7f)
-                    Text(subtitle,
+                              color: contentColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: contentColor.withOpacity(0.7))),
-                  ],
+                              color: contentColor.withOpacity(0.7),
+                            ),
+                      ),
+                    ],
+                  ),
                 ),
-                const Spacer(),
-                // KT: size=30dp, background(alpha=opacity), glow(alpha=0.35f), icon(alpha=0.6f)
                 _GlowCircle(
                   color: contentColor,
                   glowAlpha: 0.35,
                   bgAlpha: opacity,
                   size: 30,
-                  child: Icon(Icons.arrow_forward_ios,
-                      color: contentColor.withOpacity(0.6), size: 13),
+                  child: Icon(
+                    Icons.arrow_forward_ios,
+                    color: contentColor.withOpacity(0.6),
+                    size: 13,
+                  ),
                 ),
               ],
             ),
@@ -93,7 +99,7 @@ child: Row(
   }
 }
 
-// KT 的 drawBehind glow + background circle 组合
+// 优化：使用 BoxShadow 替代 CustomPaint 渲染发光效果，更加自然且性能更好
 class _GlowCircle extends StatelessWidget {
   const _GlowCircle({
     required this.color,
@@ -110,52 +116,29 @@ class _GlowCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _GlowPainter(color: color, glowAlpha: glowAlpha),
-      child: Container(
-        width: size,
-        height: size,
-        // KT: background(color = contentColor.copy(alpha = opacity), shape = CircleShape)
-        decoration: BoxDecoration(
-          color: color.withOpacity(bgAlpha),
-          shape: BoxShape.circle,
-        ),
-        alignment: Alignment.center,
-        child: child,
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color.withOpacity(bgAlpha),
+        shape: BoxShape.circle,
+        // 利用阴影实现外发光 (Glow)
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(glowAlpha),
+            blurRadius: size / 2.5, // 动态模糊半径
+            spreadRadius: 0,
+          ),
+        ],
       ),
+      alignment: Alignment.center,
+      child: child,
     );
   }
-}
-
-class _GlowPainter extends CustomPainter {
-  _GlowPainter({required this.color, required this.glowAlpha});
-  final Color color;
-  final double glowAlpha;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // KT: glowRadius = size.minDimension / 1.8f
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.shortestSide / 1.8;
-    canvas.drawCircle(
-      center,
-      radius,
-      Paint()
-        ..shader = RadialGradient(
-          // KT: listOf(contentColor.copy(alpha=glowAlpha), Color.Transparent)
-          colors: [color.withOpacity(glowAlpha), Colors.transparent],
-        ).createShader(Rect.fromCircle(center: center, radius: radius)),
-    );
-  }
-
-  @override
-  bool shouldRepaint(_GlowPainter old) => old.color != color || old.glowAlpha != glowAlpha;
 }
 
 // ─────────────────────────────────────────────
 // StatCard
-// KT: surfaceContainer.copy(alpha = 0.65f)
-// KT: onSurface (value), onSurface.copy(alpha=0.55f) (label)
 // ─────────────────────────────────────────────
 
 class _StatCard extends StatelessWidget {
@@ -167,29 +150,37 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      elevation: 0,
-      // KT: surfaceContainer.copy(alpha = 0.65f)
-      color: cs.surfaceContainer.withOpacity(0.65),
-      clipBehavior: Clip.hardEdge,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // KT: headlineMedium, FontWeight.Bold, onSurface
-              Text(value,
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surfaceContainer.withOpacity(0.65),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold, color: cs.onSurface)),
-              const SizedBox(height: 10),
-              // KT: labelMedium, onSurface.copy(alpha=0.55f)
-              Text(label,
+                        fontWeight: FontWeight.bold,
+                        color: cs.onSurface,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  label,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: cs.onSurface.withOpacity(0.55))),
-            ],
+                        color: cs.onSurface.withOpacity(0.55),
+                      ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -199,12 +190,6 @@ class _StatCard extends StatelessWidget {
 
 // ─────────────────────────────────────────────
 // DeviceInfoCard
-// KT: primary.copy(alpha=0.08f) verticalGradient + blur(24dp) 背景层
-// KT: surfaceContainer.copy(alpha=0.6f) 卡片色
-// KT: primaryContainer.copy(alpha=0.8f) 图标背景
-// KT: onPrimaryContainer 图标色
-// KT: onSurface.copy(alpha=0.55f) title色
-// KT: onSurface value色, FontWeight.SemiBold
 // ─────────────────────────────────────────────
 
 class _DeviceInfoCard extends StatelessWidget {
@@ -215,7 +200,6 @@ class _DeviceInfoCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     // TODO: 替换为 device_info_plus 真实数据
-    // KT: os.version / Build.VERSION.RELEASE / MANUFACTURER+MODEL / appVersion
     final items = [
       (Icons.memory, '内核版本', Platform.operatingSystemVersion),
       (Icons.android, 'Android 版本', Platform.operatingSystem),
@@ -223,58 +207,59 @@ class _DeviceInfoCard extends StatelessWidget {
       (Icons.settings, '管理器版本', '1.0.0'),
     ];
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: Stack(
-        children: [
-          // KT: matchParentSize + verticalGradient(primary 0.08→transparent) + blur(24dp)
-          Positioned.fill(
-            child: ImageFiltered(
-              imageFilter: _blurFilter,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [cs.primary.withOpacity(0.08), Colors.transparent],
-                  ),
+    return Stack(
+      children: [
+        // 优化：去除无意义的 ImageFilter 模糊渐变，改为真实的底部环境光投影（Ambient Shadow）
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: cs.primary.withOpacity(0.08),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                  spreadRadius: 2,
                 ),
-              ),
+              ],
             ),
           ),
-          // KT: surfaceContainer.copy(alpha=0.6f)
-          Card(
-            margin: EdgeInsets.zero,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-            elevation: 0,
+        ),
+        // 主卡片
+        Container(
+          decoration: BoxDecoration(
             color: cs.surfaceContainer.withOpacity(0.6),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Column(
-                children: List.generate(items.length, (i) {
-                  final (icon, title, value) = items[i];
-                  return Column(
-                    children: [
-                      _DeviceInfoItem(icon: icon, title: title, value: value),
-                      if (i < items.length - 1)
-                        Divider(
-                          height: 0.5, thickness: 0.5,
-                          indent: 20, endIndent: 20,
-                          // KT: outlineVariant
-                          color: cs.outlineVariant,
-                        ),
-                    ],
-                  );
-                }),
-              ),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(
+              color: cs.outlineVariant.withOpacity(0.3), // 增加一层极细的微光边框提升质感
+              width: 0.5,
             ),
           ),
-        ],
-      ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              children: List.generate(items.length, (i) {
+                final (icon, title, value) = items[i];
+                return Column(
+                  children: [
+                    _DeviceInfoItem(icon: icon, title: title, value: value),
+                    if (i < items.length - 1)
+                      Divider(
+                        height: 1,
+                        thickness: 0.5,
+                        indent: 74, // 优化对齐：分割线与文字左侧对齐，而非贯穿图标
+                        endIndent: 20,
+                        color: cs.outlineVariant.withOpacity(0.5),
+                      ),
+                  ],
+                );
+              }),
+            ),
+          ),
+        ),
+      ],
     );
   }
-
-  static final _blurFilter = ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24);
 }
 
 class _DeviceInfoItem extends StatelessWidget {
@@ -290,12 +275,12 @@ class _DeviceInfoItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       child: Row(
         children: [
-          // KT: size=38dp, primaryContainer.copy(alpha=0.8f), RoundedCornerShape(11dp)
           Container(
-            width: 38, height: 38,
+            width: 40,
+            height: 40, // 微调至 40，让图标容器更加饱满
             decoration: BoxDecoration(
               color: cs.primaryContainer.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(11),
+              borderRadius: BorderRadius.circular(12),
             ),
             alignment: Alignment.center,
             child: Icon(icon, size: 20, color: cs.onPrimaryContainer),
@@ -305,16 +290,23 @@ class _DeviceInfoItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // KT: labelMedium, onSurface.copy(alpha=0.55f), FontWeight.Medium
-                Text(title,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         color: cs.onSurface.withOpacity(0.55),
-                        fontWeight: FontWeight.w500)),
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
                 const SizedBox(height: 2),
-                // KT: bodyMedium, onSurface, FontWeight.SemiBold
-                Text(value,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: cs.onSurface, fontWeight: FontWeight.w600)),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: cs.onSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
+                  maxLines: 1, // 防止过长溢出破坏布局
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
@@ -345,19 +337,17 @@ class HomeScreen extends StatelessWidget {
     final vm = context.watch<HomeViewModel>();
 
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        // KT: titleLarge, FontWeight.Bold
         title: const Text('NekoSU', style: TextStyle(fontWeight: FontWeight.bold)),
-        // KT: containerColor=surface, titleContentColor=onSurface
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: Colors.transparent, // 配合 scrolledUnderElevation 让滑动更通透
         foregroundColor: Theme.of(context).colorScheme.onSurface,
         scrolledUnderElevation: 0,
+        centerTitle: true, // MD3 风格居中或靠左均可，视需求而定
       ),
       body: SingleChildScrollView(
-        // KT: horizontal=16, vertical=12, bottom=88
         padding: EdgeInsets.fromLTRB(16, 12, 16, extraBottomPadding),
         child: Column(
-          // KT: verticalArrangement = spacedBy(16.dp)
           children: [
             _StatusCard(
               status: vm.installStatus,
@@ -365,8 +355,13 @@ class HomeScreen extends StatelessWidget {
                 if (vm.installStatus != InstallStatus.installed) {
                   // TODO: install sheet
                 } else {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(const SnackBar(content: Text('服务运行正常')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('服务运行正常'),
+                      behavior: SnackBarBehavior.floating, // 悬浮 SnackBar 更现代
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  );
                 }
               },
             ),
