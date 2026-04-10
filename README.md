@@ -1,4 +1,4 @@
-# manager
+# nekosu
 
 A new Flutter project.
 
