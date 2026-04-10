@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:dynamic_color/dynamic_color.dart';
 
 import 'screen/home/home_screen.dart';
 import 'screen/home/home_view_model.dart';
@@ -64,35 +62,52 @@ class FloatingBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 24,
-        ).copyWith(bottom: 24),
-        child: Align(
-          child: Material(
-            color: cs.surface,
-            borderRadius: BorderRadius.circular(50),
-            elevation: 8,
-            shadowColor: Colors.black38,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: items
-                    .map(
-                      (item) => _PillNavItem(
-                        item: item,
-                        selected: currentRoute == item.route,
-                        onTap: () => onTap(item.route),
-                      ),
-                    )
-                    .toList(),
+
+    final gradient = LinearGradient(
+      begin: Alignment.bottomCenter,
+      end: Alignment.topCenter,
+      colors: [
+        cs.surface,
+        cs.surface.withAlpha(200),
+        cs.surface.withAlpha(0),
+      ],
+      stops: const [0.0, 0.5, 1.0],
+    );
+
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: [
+        IgnorePointer(
+          child: Container(
+            height: 130,
+            decoration: BoxDecoration(gradient: gradient),
+          ),
+        ),
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+            child: Material(
+              color: cs.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(50),
+              elevation: 2,
+              shadowColor: cs.shadow.withAlpha(60),
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: items.map((item) {
+                    return _PillNavItem(
+                      item: item,
+                      selected: currentRoute == item.route,
+                      onTap: () => onTap(item.route),
+                    );
+                  }).toList(),
+                ),
               ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -110,27 +125,34 @@ class _PillNavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 350),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeOutCubic,
         height: 48,
-        width: selected ? 88.0 : 48.0,
+        width: selected ? 96.0 : 48.0,
         decoration: BoxDecoration(
-          color: selected ? cs.primaryContainer : Colors.transparent,
+          color: selected ? cs.secondaryContainer : Colors.transparent,
           borderRadius: BorderRadius.circular(50),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              selected ? item.selectedIcon : item.unselectedIcon,
-              size: 22,
-              color: selected ? cs.onPrimaryContainer : cs.onSurfaceVariant,
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              transitionBuilder: (child, anim) =>
+                  ScaleTransition(scale: anim, child: child),
+              child: Icon(
+                selected ? item.selectedIcon : item.unselectedIcon,
+                key: ValueKey(selected),
+                size: 22,
+                color: selected ? cs.onSecondaryContainer : cs.onSurfaceVariant,
+              ),
             ),
             AnimatedSize(
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 220),
               curve: Curves.easeOutCubic,
               child: selected
                   ? Padding(
@@ -138,7 +160,11 @@ class _PillNavItem extends StatelessWidget {
                       child: Text(
                         item.label,
                         style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(color: cs.onPrimaryContainer),
+                            ?.copyWith(
+                              color: cs.onSecondaryContainer,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0,
+                            ),
                         maxLines: 1,
                         softWrap: false,
                         overflow: TextOverflow.visible,
@@ -166,21 +192,40 @@ class NormalBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final idx = items
         .indexWhere((e) => e.route == currentRoute)
         .clamp(0, items.length - 1);
-    return NavigationBar(
-      selectedIndex: idx,
-      onDestinationSelected: (i) => onTap(items[i].route),
-      destinations: items
-          .map(
-            (item) => NavigationDestination(
-              icon: Icon(item.unselectedIcon),
-              selectedIcon: Icon(item.selectedIcon),
-              label: item.label,
-            ),
-          )
-          .toList(),
+
+    return NavigationBarTheme(
+      data: NavigationBarThemeData(
+        backgroundColor: cs.surfaceContainer,
+        indicatorColor: cs.secondaryContainer,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final active = states.contains(WidgetState.selected);
+          return IconThemeData(
+            color: active ? cs.onSecondaryContainer : cs.onSurfaceVariant,
+          );
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final active = states.contains(WidgetState.selected);
+          return Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: active ? cs.onSurface : cs.onSurfaceVariant,
+            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+          );
+        }),
+      ),
+      child: NavigationBar(
+        selectedIndex: idx,
+        onDestinationSelected: (i) => onTap(items[i].route),
+        destinations: items.map((item) {
+          return NavigationDestination(
+            icon: Icon(item.unselectedIcon),
+            selectedIcon: Icon(item.selectedIcon),
+            label: item.label,
+          );
+        }).toList(),
+      ),
     );
   }
 }
@@ -212,9 +257,9 @@ class _MainScreenState extends State<MainScreen> {
       onNavigateToApps: () => _navigate(AppRoute.history),
       onNavigateToRules: () => _navigate(AppRoute.fmacRules),
     ),
-    AppRoute.history => const _Placeholder('Apps / History'),
+    AppRoute.history   => const _Placeholder('Apps / History'),
     AppRoute.fmacRules => const _Placeholder('FMAC Rules'),
-    AppRoute.settings => const _Placeholder('Settings'),
+    AppRoute.settings  => const _Placeholder('Settings'),
   };
 
   @override
@@ -223,8 +268,9 @@ class _MainScreenState extends State<MainScreen> {
     final show = _topLevel.contains(_current);
 
     Widget animatedBar(Widget child) => AnimatedSlide(
-      duration: const Duration(milliseconds: 200),
-      offset: show ? Offset.zero : const Offset(0, 1),
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOutCubic,
+      offset: show ? Offset.zero : const Offset(0, 1.5),
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 200),
         opacity: show ? 1.0 : 0.0,
@@ -245,7 +291,7 @@ class _MainScreenState extends State<MainScreen> {
       body: Stack(
         children: [
           AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 280),
             child: KeyedSubtree(key: ValueKey(_current), child: _page()),
           ),
           if (floating)
@@ -279,44 +325,39 @@ class _Placeholder extends StatelessWidget {
 void main() => runApp(
   Provider<HomeViewModel>(
     create: (_) => HomeViewModel.init(),
-    child: DynamicColorBuilder(
-      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-        final lightScheme =
-            lightDynamic ?? ColorScheme.fromSeed(seedColor: Colors.deepPurple);
-        final darkScheme =
-            darkDynamic ??
-            ColorScheme.fromSeed(
-              seedColor: Colors.deepPurple,
-              brightness: Brightness.dark,
-            );
-
-        return MaterialApp(
-          theme: ThemeData(
-            useMaterial3: true,
-            colorScheme: lightScheme,
-            cardTheme: CardThemeData(
-              elevation: 0,
-              color: lightScheme.surfaceContainer,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-            ),
+    child: MaterialApp(
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        cardTheme: CardThemeData(
+          elevation: 0,
+          color: ColorScheme.fromSeed(
+            seedColor: Colors.deepPurple,
+          ).surfaceContainer,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
           ),
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            colorScheme: darkScheme,
-            cardTheme: CardThemeData(
-              elevation: 0,
-              color: darkScheme.surfaceContainer,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-            ),
+        ),
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.dark,
+        ),
+        cardTheme: CardThemeData(
+          elevation: 0,
+          color: ColorScheme.fromSeed(
+            seedColor: Colors.deepPurple,
+            brightness: Brightness.dark,
+          ).surfaceContainer,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
           ),
-          themeMode: ThemeMode.system,
-          home: const MainScreen(navBarStyle: NavBarStyle.floating),
-        );
-      },
+        ),
+      ),
+      themeMode: ThemeMode.system,
+      home: const MainScreen(navBarStyle: NavBarStyle.floating),
     ),
   ),
 );
