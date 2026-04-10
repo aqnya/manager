@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:dynamic_color/dynamic_color.dart';
 import 'floating_navigation_bar.dart'; 
 
 void main() {
@@ -13,31 +12,26 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DynamicColorBuilder(
-      builder: (lightDynamic, darkDynamic) {
-        final lightScheme = ColorScheme.fromSeed(
-          seedColor: _defaultColorSeed,
-        );
+    final lightScheme = ColorScheme.fromSeed(
+      seedColor: _defaultColorSeed,
+    );
 
-        final darkScheme = ColorScheme.fromSeed(
-          seedColor: _defaultColorSeed,
-          brightness: Brightness.dark,
-        );
+    final darkScheme = ColorScheme.fromSeed(
+      seedColor: _defaultColorSeed,
+      brightness: Brightness.dark,
+    );
 
-        return MaterialApp(
-          theme: ThemeData(
-            useMaterial3: true,
-            colorScheme: lightDynamic ?? lightScheme,
-          ),
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            colorScheme: darkDynamic ?? darkScheme,
-          ),
-          themeMode: ThemeMode.system,
-          
-          home: const MainPage(),
-        );
-      },
+    return MaterialApp(
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: lightScheme,
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: darkScheme,
+      ),
+      themeMode: ThemeMode.system,
+      home: const MainPage(),
     );
   }
 }
