@@ -63,7 +63,6 @@ class _MainPageState extends State<MainPage> {
       
       bottomNavigationBar: FloatingNavigationBar(
       labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-        backgroundColor: Colors.transparent,
         selectedIndex: _index,
         onDestinationSelected: (index) {
           setState(() {
