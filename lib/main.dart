@@ -332,7 +332,7 @@ void main() => runApp(
         cardTheme: CardThemeData(
           elevation: 0,
           color: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple,
+            seedColor: Colors.Pink,
           ).surfaceContainer,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
@@ -342,13 +342,13 @@ void main() => runApp(
       darkTheme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
+          seedColor: Colors.Pink,
           brightness: Brightness.dark,
         ),
         cardTheme: CardThemeData(
           elevation: 0,
           color: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple,
+            seedColor: Colors.Pink,
             brightness: Brightness.dark,
           ).surfaceContainer,
           shape: RoundedRectangleBorder(
