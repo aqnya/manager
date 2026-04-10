@@ -281,25 +281,36 @@ void main() => runApp(
     create: (_) => HomeViewModel.init(),
     child: DynamicColorBuilder(
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+        final lightScheme =
+            lightDynamic ?? ColorScheme.fromSeed(seedColor: Colors.deepPurple);
+        final darkScheme =
+            darkDynamic ??
+            ColorScheme.fromSeed(
+              seedColor: Colors.deepPurple,
+              brightness: Brightness.dark,
+            );
+
         return MaterialApp(
-          title: 'NekoSU',
           theme: ThemeData(
             useMaterial3: true,
-            colorScheme:
-                lightDynamic ??
-                ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-            textTheme: GoogleFonts.notoSansScTextTheme(),
+            colorScheme: lightScheme,
+            cardTheme: CardTheme(
+              elevation: 0,
+              color: lightScheme.surfaceContainer,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
           ),
           darkTheme: ThemeData(
             useMaterial3: true,
-            colorScheme:
-                darkDynamic ??
-                ColorScheme.fromSeed(
-                  seedColor: Colors.deepPurple,
-                  brightness: Brightness.dark,
-                ),
-            textTheme: GoogleFonts.notoSansScTextTheme(
-              ThemeData(brightness: Brightness.dark).textTheme,
+            colorScheme: darkScheme,
+            cardTheme: CardTheme(
+              elevation: 0,
+              color: darkScheme.surfaceContainer,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
             ),
           ),
           themeMode: ThemeMode.system,

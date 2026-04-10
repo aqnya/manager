@@ -16,7 +16,10 @@ class _GlowCircle extends StatelessWidget {
       child: Container(
         width: size,
         height: size,
-        decoration: BoxDecoration(color: color.withOpacity(0.06), shape: BoxShape.circle),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.06),
+          shape: BoxShape.circle,
+        ),
         alignment: Alignment.center,
         child: child,
       ),
@@ -62,7 +65,9 @@ class _StatusCard extends StatelessWidget {
     final contentColor = status == InstallStatus.installed
         ? cs.onPrimaryContainer
         : (isDark ? cs.onErrorContainer : cs.onError);
-    final icon = status == InstallStatus.installed ? Icons.check_circle : Icons.system_update;
+    final icon = status == InstallStatus.installed
+        ? Icons.check_circle
+        : Icons.system_update;
     final title = status == InstallStatus.installed ? '已安装' : '未安装';
     final subtitle = status == InstallStatus.installed ? '服务运行正常' : '点击安装';
 
@@ -76,26 +81,39 @@ class _StatusCard extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                _GlowCircle(color: contentColor, child: Icon(icon, color: contentColor, size: 24)),
+                _GlowCircle(
+                  color: contentColor,
+                  child: Icon(icon, color: contentColor, size: 24),
+                ),
                 const SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: contentColor, fontWeight: FontWeight.w600)),
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: contentColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 3),
-                    Text(subtitle,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: contentColor.withOpacity(0.7))),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: contentColor.withOpacity(0.7),
+                      ),
+                    ),
                   ],
                 ),
                 const Spacer(),
                 _GlowCircle(
                   color: contentColor,
                   size: 30,
-                  child: Icon(Icons.arrow_forward_ios,
-                      color: contentColor.withOpacity(0.6), size: 13),
+                  child: Icon(
+                    Icons.arrow_forward_ios,
+                    color: contentColor.withOpacity(0.6),
+                    size: 13,
+                  ),
                 ),
               ],
             ),
@@ -107,7 +125,11 @@ class _StatusCard extends StatelessWidget {
 }
 
 class _StatCard extends StatelessWidget {
-  const _StatCard({required this.label, required this.value, required this.onTap});
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
   final String label;
   final String value;
   final VoidCallback onTap;
@@ -118,7 +140,7 @@ class _StatCard extends StatelessWidget {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       elevation: 0,
-      color: cs.surfaceContainer,  // 去掉 withOpacity
+      color: cs.surfaceContainer, // 去掉 withOpacity
       clipBehavior: Clip.hardEdge,
       child: InkWell(
         onTap: onTap,
@@ -127,13 +149,20 @@ class _StatCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(value,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold, color: cs.onSurface)),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: cs.onSurface,
+                ),
+              ),
               const SizedBox(height: 10),
-              Text(label,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: cs.onSurfaceVariant)),  // 用语义色替代 withOpacity
+              Text(
+                label,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelMedium?.copyWith(color: cs.onSurfaceVariant),
+              ), // 用语义色替代 withOpacity
             ],
           ),
         ),
@@ -173,9 +202,11 @@ class _DeviceInfoCard extends StatelessWidget {
           ),
           Card(
             margin: EdgeInsets.zero,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
             elevation: 0,
-            color: cs.surfaceContainer,  // 去掉 withOpacity
+            color: cs.surfaceContainer, // 去掉 withOpacity
             child: Column(
               children: List.generate(items.length, (i) {
                 final (icon, title, value) = items[i];
@@ -183,8 +214,13 @@ class _DeviceInfoCard extends StatelessWidget {
                   children: [
                     _DeviceInfoItem(icon: icon, title: title, value: value),
                     if (i < items.length - 1)
-                      Divider(height: 0.5, thickness: 0.5, indent: 20,
-                          endIndent: 20, color: cs.outlineVariant),
+                      Divider(
+                        height: 0.5,
+                        thickness: 0.5,
+                        indent: 20,
+                        endIndent: 20,
+                        color: cs.outlineVariant,
+                      ),
                   ],
                 );
               }),
@@ -197,7 +233,11 @@ class _DeviceInfoCard extends StatelessWidget {
 }
 
 class _DeviceInfoItem extends StatelessWidget {
-  const _DeviceInfoItem({required this.icon, required this.title, required this.value});
+  const _DeviceInfoItem({
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
   final IconData icon;
   final String title;
   final String value;
@@ -213,7 +253,7 @@ class _DeviceInfoItem extends StatelessWidget {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: cs.primaryContainer,  // 去掉 withOpacity
+              color: cs.primaryContainer, // 去掉 withOpacity
               borderRadius: BorderRadius.circular(11),
             ),
             alignment: Alignment.center,
@@ -224,14 +264,21 @@ class _DeviceInfoItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: cs.onSurfaceVariant,  // 用语义色替代 withOpacity
-                        fontWeight: FontWeight.w500)),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: cs.onSurfaceVariant, // 用语义色替代 withOpacity
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(value,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: cs.onSurface, fontWeight: FontWeight.w600)),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: cs.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),
@@ -259,7 +306,10 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('NekoSU', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'NekoSU',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
         scrolledUnderElevation: 0,
@@ -274,8 +324,9 @@ class HomeScreen extends StatelessWidget {
                 if (vm.installStatus != InstallStatus.installed) {
                   // TODO: show install sheet
                 } else {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(const SnackBar(content: Text('服务运行正常')));
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('服务运行正常')));
                 }
               },
             ),
