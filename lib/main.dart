@@ -1,122 +1,206 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
+enum AppRoute { home, history, fmacRules, settings }
+
+enum NavBarStyle { floating, normal }
+
+class _NavItem {
+  const _NavItem({
+    required this.route,
+    required this.label,
+    required this.selectedIcon,
+    required this.unselectedIcon,
+  });
+  final AppRoute route;
+  final String label;
+  final IconData selectedIcon;
+  final IconData unselectedIcon;
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+const List<_NavItem> _navItems = [
+  _NavItem(route: AppRoute.home,      label: 'Home',     selectedIcon: Icons.home,          unselectedIcon: Icons.home_outlined),
+  _NavItem(route: AppRoute.history,   label: 'Apps',     selectedIcon: Icons.apps,          unselectedIcon: Icons.apps_outlined),
+  _NavItem(route: AppRoute.fmacRules, label: 'Rules',    selectedIcon: Icons.rule,          unselectedIcon: Icons.rule_outlined),
+  _NavItem(route: AppRoute.settings,  label: 'Settings', selectedIcon: Icons.settings,      unselectedIcon: Icons.settings_outlined),
+];
 
-  // This widget is the root of your application.
+class FloatingBottomNavigationBar extends StatelessWidget {
+  const FloatingBottomNavigationBar({super.key, required this.currentRoute, required this.items, required this.onTap});
+  final AppRoute currentRoute;
+  final List<_NavItem> items;
+  final ValueChanged<AppRoute> onTap;
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+    final cs = Theme.of(context).colorScheme;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24).copyWith(bottom: 24),
+        child: Align(
+          child: Material(
+            color: cs.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(50),
+            elevation: 8,
+            shadowColor: Colors.black38,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: items.map((item) => _PillNavItem(
+                  item: item,
+                  selected: currentRoute == item.route,
+                  onTap: () => onTap(item.route),
+                )).toList(),
+              ),
+            ),
+          ),
+        ),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+class _PillNavItem extends StatelessWidget {
+  const _PillNavItem({required this.item, required this.selected, required this.onTap});
+  final _NavItem item;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
+    final cs = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+        height: 48,
+        width: selected ? 88.0 : 48.0,
+        decoration: BoxDecoration(
+          color: selected ? cs.primaryContainer : Colors.transparent,
+          borderRadius: BorderRadius.circular(50),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            Icon(
+              selected ? item.selectedIcon : item.unselectedIcon,
+              size: 22,
+              color: selected ? cs.onPrimaryContainer : cs.onSurfaceVariant,
+            ),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              child: selected
+                  ? Padding(
+                      padding: const EdgeInsets.only(left: 6),
+                      child: Text(
+                        item.label,
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(color: cs.onPrimaryContainer),
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.visible,
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+    );
+  }
+}
+
+class NormalBottomNavigationBar extends StatelessWidget {
+  const NormalBottomNavigationBar({super.key, required this.currentRoute, required this.items, required this.onTap});
+  final AppRoute currentRoute;
+  final List<_NavItem> items;
+  final ValueChanged<AppRoute> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final idx = items.indexWhere((e) => e.route == currentRoute).clamp(0, items.length - 1);
+    return NavigationBar(
+      selectedIndex: idx,
+      onDestinationSelected: (i) => onTap(items[i].route),
+      destinations: items.map((item) => NavigationDestination(
+        icon: Icon(item.unselectedIcon),
+        selectedIcon: Icon(item.selectedIcon),
+        label: item.label,
+      )).toList(),
+    );
+  }
+}
+
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key, this.navBarStyle = NavBarStyle.floating});
+  final NavBarStyle navBarStyle;
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  AppRoute _current = AppRoute.home;
+
+  static const _topLevel = {AppRoute.home, AppRoute.history, AppRoute.fmacRules, AppRoute.settings};
+
+  void _navigate(AppRoute r) { if (_current != r) setState(() => _current = r); }
+
+  Widget _page() => switch (_current) {
+    AppRoute.home      => const _Placeholder('Home'),
+    AppRoute.history   => const _Placeholder('Apps / History'),
+    AppRoute.fmacRules => const _Placeholder('FMAC Rules'),
+    AppRoute.settings  => const _Placeholder('Settings'),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final floating = widget.navBarStyle == NavBarStyle.floating;
+    final show = _topLevel.contains(_current);
+
+    Widget animatedBar(Widget child) => AnimatedSlide(
+      duration: const Duration(milliseconds: 200),
+      offset: show ? Offset.zero : const Offset(0, 1),
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: show ? 1.0 : 0.0,
+        child: child,
+      ),
+    );
+
+    return Scaffold(
+      bottomNavigationBar: !floating && show
+          ? animatedBar(NormalBottomNavigationBar(currentRoute: _current, items: _navItems, onTap: _navigate))
+          : null,
+      body: Stack(
+        children: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: KeyedSubtree(key: ValueKey(_current), child: _page()),
+          ),
+          if (floating)
+            Positioned(
+              left: 0, right: 0, bottom: 0,
+              child: animatedBar(FloatingBottomNavigationBar(currentRoute: _current, items: _navItems, onTap: _navigate)),
+            ),
+        ],
       ),
     );
   }
 }
+
+class _Placeholder extends StatelessWidget {
+  const _Placeholder(this.label);
+  final String label;
+
+  @override
+  Widget build(BuildContext context) =>
+      Center(child: Text(label, style: Theme.of(context).textTheme.titleLarge));
+}
+
+void main() => runApp(MaterialApp(
+  title: 'NekoSU',
+  theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
+  home: const MainScreen(navBarStyle: NavBarStyle.floating),
+));
