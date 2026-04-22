@@ -6,9 +6,8 @@ class RootHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 使用拉伸效果的 AppBar 提升质感
       appBar: AppBar(
-        title: const Text("NKSU Manager", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text("nekosu", style: TextStyle(fontWeight: FontWeight.normal)),
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.info_outline)),
         ],
