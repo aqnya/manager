@@ -16,7 +16,7 @@ class RootHomePage extends StatelessWidget {
                 TextSpan(
                   text: 'Neko',
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 24,
                     fontWeight: FontWeight.w300,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
@@ -24,7 +24,7 @@ class RootHomePage extends StatelessWidget {
                 TextSpan(
                   text: 'SU',
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 24,
                     fontWeight: FontWeight.w700,
                     color: Theme.of(context).colorScheme.primary,
                   ),
