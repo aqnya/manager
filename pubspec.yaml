@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   dynamic_color: ^1.8.1
   flex_seed_scheme: ^4.0.1
-  ffigen: ^20.1.1
+  posix: ^6.5.0
 
 dev_dependencies:
   flutter_test:

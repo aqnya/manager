@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import "info.dart";
 
 class RootHomePage extends StatelessWidget {
   const RootHomePage({super.key});
@@ -115,7 +116,8 @@ class RootHomePage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: Text(
-                    '5.15.xx-android14-gki',
+          //          '5.15.xx-android14-gki',
+          getKernelRelease,
                     style: TextStyle(
                       color: onPrimary,
                       fontSize: 12,
