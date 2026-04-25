@@ -2,7 +2,8 @@ import 'dart:ffi';
 import 'dart:io';
 import 'package:ffi/ffi.dart';
 
-final DynamicLibrary _libc = DynamicLibrary.open('libc.so');
+final DynamicLibrary _libc =
+    Platform.isAndroid ? DynamicLibrary.open('libc.so') : DynamicLibrary.process();
 
 typedef NativeUname = Int32 Function(Pointer<Utsname>);
 typedef DartUname = int Function(Pointer<Utsname>);
@@ -10,7 +11,7 @@ typedef DartUname = int Function(Pointer<Utsname>);
 final DartUname _uname =
     _libc.lookupFunction<NativeUname, DartUname>('uname');
 
-class Utsname extends Struct {
+final class Utsname extends Struct {
   @Array(65)
   external Array<Int8> sysname;
 
@@ -33,7 +34,9 @@ String getKernelRelease() {
   try {
     if (_uname(uts) != 0) return "uname failed";
 
-    return uts.release.cast<Int8>().toDartString();
+    return uts.ref.release
+        .cast<Int8>()
+        .toDartString();
   } finally {
     calloc.free(uts);
   }

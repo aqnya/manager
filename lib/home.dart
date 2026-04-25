@@ -117,7 +117,7 @@ class RootHomePage extends StatelessWidget {
                   ),
                   child: Text(
                     //          '5.15.xx-android14-gki',
-                    getKernelReleaseDirectly(),
+                    getKernelRelease(),
                     style: TextStyle(
                       color: onPrimary,
                       fontSize: 12,
