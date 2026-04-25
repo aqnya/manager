@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import "info.dart";
 
 class RootHomePage extends StatelessWidget {
   const RootHomePage({super.key});
