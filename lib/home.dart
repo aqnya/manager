@@ -72,10 +72,9 @@ class RootHomePage extends StatelessWidget {
     return Card(
       elevation: 0,
       color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
-/*      shape: RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
-        side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-      ),*/
+      ),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
