@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 class _NavItem {
@@ -8,18 +9,19 @@ class _NavItem {
   const _NavItem(this.icon, this.activeIcon, this.label);
 }
 
-class _GlassNavBar extends StatelessWidget {
+class GlassNavBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onTap;
 
-  const _GlassNavBar({
+  const GlassNavBar({
+    super.key,
     required this.selectedIndex,
     required this.onTap,
   });
 
   static const _items = [
-    _NavItem(Icons.home_outlined, Icons.home_rounded, '首页'),
-    _NavItem(Icons.history_outlined, Icons.history_rounded, '历史'),
+    _NavItem(Icons.home_outlined,     Icons.home_rounded,     '首页'),
+    _NavItem(Icons.history_outlined,  Icons.history_rounded,  '历史'),
     _NavItem(Icons.settings_outlined, Icons.settings_rounded, '设置'),
   ];
 
@@ -29,23 +31,29 @@ class _GlassNavBar extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        bottom: bottom + 12,
+        left: 32,
+        right: 32,
+        bottom: bottom > 0 ? bottom + 8 : 20,
       ),
       child: GlassContainer(
-        borderRadius: BorderRadius.circular(40),
+        borderRadius: BorderRadius.circular(48),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(_items.length, (i) {
-              return _NavTab(
-                item: _items[i],
-                selected: i == selectedIndex,
-                onTap: () => onTap(i),
-              );
-            }),
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(
+              _items.length,
+              (i) => Expanded(
+                child: _NavTab(
+                  item: _items[i],
+                  selected: i == selectedIndex,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    onTap(i);
+                  },
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -59,6 +67,7 @@ class _NavTab extends StatelessWidget {
   final VoidCallback onTap;
 
   const _NavTab({
+    super.key,
     required this.item,
     required this.selected,
     required this.onTap,
@@ -67,51 +76,60 @@ class _NavTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final activeColor   = colorScheme.primary;
+    final inactiveColor = colorScheme.onSurfaceVariant;
 
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeInOut,
-        padding: EdgeInsets.symmetric(
-          horizontal: selected ? 20 : 16,
-          vertical: 8,
-        ),
-        decoration: selected
-            ? BoxDecoration(
-                color: colorScheme.primary.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(30),
-              )
-            : null,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              selected ? item.activeIcon : item.icon,
-              size: 22,
-              color: selected
-                  ? colorScheme.primary
-                  : colorScheme.onSurfaceVariant,
-            ),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeInOut,
-              child: selected
-                  ? Padding(
-                      padding: const EdgeInsets.only(left: 6),
-                      child: Text(
-                        item.label,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.primary,
+      child: Center(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 280),
+          curve: Curves.easeInOutCubic,
+          padding: EdgeInsets.symmetric(
+            horizontal: selected ? 18 : 12,
+            vertical: 9,
+          ),
+          decoration: BoxDecoration(
+            color: selected ? activeColor.withOpacity(0.15) : Colors.transparent,
+            borderRadius: BorderRadius.circular(32),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                transitionBuilder: (child, anim) => ScaleTransition(
+                  scale: anim,
+                  child: child,
+                ),
+                child: Icon(
+                  selected ? item.activeIcon : item.icon,
+                  key: ValueKey(selected),
+                  size: 22,
+                  color: selected ? activeColor : inactiveColor,
+                ),
+              ),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeInOutCubic,
+                child: selected
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 6),
+                        child: Text(
+                          item.label,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: activeColor,
+                            letterSpacing: 0.2,
+                          ),
                         ),
-                      ),
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ],
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ],
+          ),
         ),
       ),
     );

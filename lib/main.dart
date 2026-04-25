@@ -40,16 +40,23 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  int _index = 0;
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    extendBody: true,
-    body: IndexedStack(index: _index, children: _pages),
-    bottomNavigationBar: _GlassNavBar(
-      selectedIndex: _index,
-      onTap: (i) => setState(() => _index = i),
-    ),
-  );
-}
+  final List<Widget> _pages = const [
+    RootHomePage(),
+    Center(child: Text('历史页面')),
+    Center(child: Text('设置页面')),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      extendBody: true,
+      body: IndexedStack(index: _index, children: _pages),
+      bottomNavigationBar: GlassNavBar(
+        selectedIndex: _index,
+        onTap: (i) => setState(() => _index = i),
+      ),
+    );
+  }
 }
