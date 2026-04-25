@@ -247,12 +247,10 @@ class _RootHomePageState extends State<RootHomePage> {
             isFirst: true,
           ),
           _buildInfoRow(context, label: 'SELinux', value: 'Enforcing'),
-          _buildInfoRow(context, label: 'Root 状态', value: '已激活'),
           _buildInfoRow(
             context,
-            label: '安全模块',
+            label: '版本',
             value: 'FMAC v1.0.2',
-            valueColor: Colors.green,
             isLast: true,
           ),
         ],
