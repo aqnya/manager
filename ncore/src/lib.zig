@@ -33,13 +33,14 @@ fn printToBuf(buf: [*]u8, len: usize, comptime fmt: []const u8, args: anytype) c
 }
 
 export fn get_selinux_status() c_int {
-    const fd = std.os.linux.open("/sys/fs/selinux/enforce", .{}, 0);
-    if (fd < 0) return 1;
+    const rc = std.os.linux.open("/sys/fs/selinux/enforce", .{}, 0);
+    if (@as(isize, @bitCast(rc)) < 0) return 1;
+    const fd: i32 = @intCast(rc);
     defer _ = std.os.linux.close(@intCast(fd));
 
     var buf: [1]u8 = undefined;
-    const n = std.os.linux.read(@intCast(fd), &buf, 1);
-    if (n <= 0) return 1;
+    const nr = std.os.linux.read(@intCast(fd), &buf, 1);
+    if (@as(isize, @bitCast(nr)) <= 0) return 1;
 
     return if (buf[0] == '0') 0 else 1;
 }
