@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import 'home.dart';
+import 'glass_nav_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,40 +40,16 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  int _index = 0;
 
-  final List<Widget> _pages = const [
-    RootHomePage(),
-    Center(child: Text('历史页面')),
-    Center(child: Text('设置页面')),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      body: IndexedStack(index: _index, children: _pages),
-      bottomNavigationBar: GlassBottomBar(
-        selectedIndex: _index,
-        onTabSelected: (index) => setState(() => _index = index),
-        tabs: const [
-          GlassBottomBarTab(
-            label: '首页',
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-          ),
-          GlassBottomBarTab(
-            label: '历史',
-            icon: Icon(Icons.history_outlined),
-            activeIcon: Icon(Icons.history),
-          ),
-          GlassBottomBarTab(
-            label: '设置',
-            icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings),
-          ),
-        ],
-      ),
-    );
-  }
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    extendBody: true,
+    body: IndexedStack(index: _index, children: _pages),
+    bottomNavigationBar: _GlassNavBar(
+      selectedIndex: _index,
+      onTap: (i) => setState(() => _index = i),
+    ),
+  );
+}
 }
