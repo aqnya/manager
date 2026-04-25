@@ -3,44 +3,49 @@ import 'package:flutter/material.dart';
 class RootHomePage extends StatelessWidget {
   const RootHomePage({super.key});
 
-  @override
+ @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        scrolledUnderElevation: 0,
-        title: RichText(
-          text: TextSpan(
+    return Column(
+      children: [
+        AppBar(
+          scrolledUnderElevation: 0,
+          backgroundColor: Colors.transparent,
+          title: RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: 'Neko',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w300,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                TextSpan(
+                  text: 'SU',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
             children: [
-              TextSpan(
-                text: 'Neko',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w300,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-              TextSpan(
-                text: 'SU',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
+              _buildHeroBanner(context),
+              const SizedBox(height: 12),
+              _buildStatsRow(context),
+              const SizedBox(height: 12),
+              _buildSystemInfo(context),
             ],
           ),
         ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
-        children: [
-          _buildHeroBanner(context),
-          const SizedBox(height: 12),
-          _buildStatsRow(context),
-          const SizedBox(height: 12),
-          _buildSystemInfo(context),
-        ],
-      ),
+      ],
     );
   }
 
