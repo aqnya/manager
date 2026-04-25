@@ -1,8 +1,26 @@
 import 'package:flutter/material.dart';
 import "info.dart";
 
-class RootHomePage extends StatelessWidget {
+class RootHomePage extends StatefulWidget {
   const RootHomePage({super.key});
+
+  @override
+  State<RootHomePage> createState() => _RootHomePageState();
+}
+
+class _RootHomePageState extends State<RootHomePage> {
+  String _kernelVersion = '获取中...';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadKernelVersion();
+  }
+
+  Future<void> _loadKernelVersion() async {
+    final version = await getKernelReleaseByCmd();
+    if (mounted) setState(() => _kernelVersion = version);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,8 +134,7 @@ class RootHomePage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: Text(
-                    //          '5.15.xx-android14-gki',
-                    getKernelReleaseByCmd(),
+                    _kernelVersion,
                     style: TextStyle(
                       color: onPrimary,
                       fontSize: 12,
@@ -234,7 +251,7 @@ class RootHomePage extends StatelessWidget {
           _buildInfoRow(
             context,
             label: '内核版本',
-            value: '5.15.xx-android14-gki',
+            value: _kernelVersion,
             isFirst: true,
           ),
           _buildInfoRow(context, label: 'SELinux', value: 'Enforcing'),
