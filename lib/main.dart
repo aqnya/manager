@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'floating_navigation_bar.dart'; 
+import 'floating_navigation_bar.dart';
 import 'home.dart';
 
 void main() {
@@ -14,9 +14,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lightScheme = ColorScheme.fromSeed(
-      seedColor: _defaultColorSeed,
-    );
+    final lightScheme = ColorScheme.fromSeed(seedColor: _defaultColorSeed);
 
     final darkScheme = ColorScheme.fromSeed(
       seedColor: _defaultColorSeed,
@@ -24,14 +22,8 @@ class MyApp extends StatelessWidget {
     );
 
     return MaterialApp(
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: lightScheme,
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: darkScheme,
-      ),
+      theme: ThemeData(useMaterial3: true, colorScheme: lightScheme),
+      darkTheme: ThemeData(useMaterial3: true, colorScheme: darkScheme),
       themeMode: ThemeMode.system,
       home: const MainPage(),
     );
@@ -57,14 +49,11 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true, 
-      body: IndexedStack(
-        index: _index,
-        children: _pages,
-      ),
-      
+      extendBody: true,
+      body: IndexedStack(index: _index, children: _pages),
+
       bottomNavigationBar: FloatingNavigationBar(
-      labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
         selectedIndex: _index,
         onDestinationSelected: (index) {
           setState(() {
@@ -106,9 +95,7 @@ class _CounterPageState extends State<CounterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("计数器"),
-      ),
+      appBar: AppBar(title: const Text("计数器")),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

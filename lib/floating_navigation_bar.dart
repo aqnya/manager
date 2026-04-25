@@ -542,10 +542,7 @@ class _NavigationDestinationLayoutDelegate extends MultiChildLayoutDelegate {
 
     positionChild(
       iconId,
-      Offset(
-        halfWidth(size) - halfWidth(iconSize),
-        iconYPosition,
-      ),
+      Offset(halfWidth(size) - halfWidth(iconSize), iconYPosition),
     );
 
     positionChild(
