@@ -7,7 +7,7 @@ class RootHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("nekosu", style: TextStyle(fontWeight: FontWeight.normal)),
+        title: const Text("NekoSU", style: TextStyle(fontWeight: FontWeight.normal,fontSize: 24.0,)),
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
