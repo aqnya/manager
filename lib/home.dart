@@ -18,7 +18,7 @@ class _RootHomePageState extends State<RootHomePage> {
   }
 
   Future<void> _loadKernelVersion() async {
-    final version = await getKernelReleaseByCmd();
+    final version = await getKernelRelease();
     if (mounted) setState(() => _kernelVersion = version);
   }
 
