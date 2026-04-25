@@ -239,14 +239,6 @@ class _RootHomePageState extends State<RootHomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '系统详情',
-            style: TextStyle(
-              color: colorScheme.onSurface,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
           const SizedBox(height: 16),
           _buildInfoRow(
             context,
