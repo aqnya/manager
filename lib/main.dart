@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import 'home.dart';
-import 'glass_nav_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,9 +54,26 @@ class _MainPageState extends State<MainPage> {
       body: GlassRefractionSource(
         child: IndexedStack(index: _index, children: _pages),
       ),
-      bottomNavigationBar: GlassNavBar(
+      bottomNavigationBar: GlassBottomBar(
         selectedIndex: _index,
-        onTap: (i) => setState(() => _index = i),
+        onTabSelected: (i) => setState(() => _index = i),
+        tabs: const [
+          GlassBottomBarTab(
+            label: '首页',
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home_rounded),
+          ),
+          GlassBottomBarTab(
+            label: '历史',
+            icon: Icon(Icons.history_outlined),
+            activeIcon: Icon(Icons.history_rounded),
+          ),
+          GlassBottomBarTab(
+            label: '设置',
+            icon: Icon(Icons.settings_outlined),
+            activeIcon: Icon(Icons.settings_rounded),
+          ),
+        ],
       ),
     );
   }
