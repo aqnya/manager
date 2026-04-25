@@ -51,9 +51,7 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      body: GlassRefractionSource(
-        child: IndexedStack(index: _index, children: _pages),
-      ),
+      body: IndexedStack(index: _index, children: _pages),
       bottomNavigationBar: GlassBottomBar(
         selectedIndex: _index,
         onTabSelected: (i) => setState(() => _index = i),
