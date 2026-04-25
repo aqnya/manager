@@ -50,6 +50,7 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+    backgroundColor: Colors.transparent, 
       extendBody: true,
       body: IndexedStack(index: _index, children: _pages),
       bottomNavigationBar: GlassBottomBar(
