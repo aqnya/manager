@@ -7,59 +7,213 @@ class RootHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "NekoSU",
-          style: TextStyle(fontWeight: FontWeight.normal, fontSize: 24.0),
+        scrolledUnderElevation: 0,
+        title: RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: 'Neko',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w300,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              TextSpan(
+                text: 'SU',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
         children: [
-          const SizedBox(height: 8),
-          // 1. 核心状态卡片
-          _buildStatusCard(context),
-          const SizedBox(height: 24),
-
-          // 2. 功能网格标题
-          Text("核心功能", style: Theme.of(context).textTheme.titleMedium),
+          _buildHeroBanner(context),
           const SizedBox(height: 12),
+          _buildStatsRow(context),
+          const SizedBox(height: 12),
+          _buildSystemInfo(context),
+        ],
+      ),
+    );
+  }
 
-          // 3. 功能网格
-          GridView.count(
-            shrinkWrap: true, // 嵌套在 ListView 中必须设置
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 1.1, // 调整卡片长宽比
+  Widget _buildHeroBanner(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
+
+    return Container(
+      height: 180,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [primary, Color.lerp(primary, Colors.black, 0.25)!],
+        ),
+      ),
+      clipBehavior: Clip.hardEdge,
+      child: Stack(
+        children: [
+          Positioned(
+            right: -24,
+            bottom: -24,
+            child: Container(
+              width: 160,
+              height: 160,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.07),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 24,
+            bottom: -40,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.07),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 20,
+            top: 20,
+            child: Icon(
+              Icons.pets_rounded,
+              size: 80,
+              color: Colors.white.withOpacity(0.12),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Welcome to',
+                  style: TextStyle(
+                    color: onPrimary.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'NekoSU',
+                  style: TextStyle(
+                    color: onPrimary,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Text(
+                    '5.15.xx-android14-gki',
+                    style: TextStyle(
+                      color: onPrimary,
+                      fontSize: 12,
+                      fontFamily: 'monospace',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsRow(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStatCard(
+            context,
+            value: '12',
+            label: '授权应用',
+            icon: Icons.shield_rounded,
+            iconColor: colorScheme.primary,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatCard(
+            context,
+            value: 'FMAC',
+            label: '安全模块 (Active)',
+            icon: Icons.security_rounded,
+            iconColor: Colors.green,
+            valueColor: Colors.green,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(
+    BuildContext context, {
+    required String value,
+    required String label,
+    required IconData icon,
+    required Color iconColor,
+    Color? valueColor,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -8,
+            bottom: -8,
+            child: Icon(icon, size: 64, color: iconColor.withOpacity(0.12)),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildFeatureItem(
-                context,
-                Icons.security,
-                "超级用户",
-                "管理 Root 权限",
-                Colors.blue,
+              Text(
+                value,
+                style: TextStyle(
+                  color: valueColor ?? colorScheme.onSurface,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -1,
+                ),
               ),
-              _buildFeatureItem(
-                context,
-                Icons.extension,
-                "模块管理",
-                "安装与管理插件",
-                Colors.orange,
-              ),
-              _buildFeatureItem(
-                context,
-                Icons.history,
-                "授权记录",
-                "查看最近活动",
-                Colors.green,
-              ),
-              _buildFeatureItem(
-                context,
-                Icons.verified_user_outlined,
-                "环境检查",
-                "检测 Root 隐藏状态",
-                Colors.purple,
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: colorScheme.onSurfaceVariant,
+                  fontSize: 12,
+                ),
               ),
             ],
           ),
@@ -68,73 +222,79 @@ class RootHomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusCard(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
+  Widget _buildSystemInfo(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            const Icon(Icons.check_circle, size: 64, color: Colors.green),
-            const SizedBox(height: 16),
-            const Text(
-              "NKSU 已激活",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '系统详情',
+            style: TextStyle(
+              color: colorScheme.onSurface,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(height: 8),
-            Text(
-              "内核版本: 5.15.xx-gki | v1.0.2 (2024)",
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+          _buildInfoRow(context, label: '内核版本', value: '5.15.xx-android14-gki', isFirst: true),
+          _buildInfoRow(context, label: 'SELinux', value: 'Enforcing'),
+          _buildInfoRow(context, label: 'Root 状态', value: '已激活'),
+          _buildInfoRow(
+            context,
+            label: '安全模块',
+            value: 'FMAC v1.0.2',
+            valueColor: Colors.green,
+            isLast: true,
+          ),
+        ],
       ),
     );
   }
 
-  // 功能项构建
-  Widget _buildFeatureItem(
-    BuildContext context,
-    IconData icon,
-    String title,
-    String subtitle,
-    Color color,
-  ) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5),
-        ),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () {},
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 32, color: color),
-              const SizedBox(height: 12),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 11, color: Colors.grey),
+  Widget _buildInfoRow(
+    BuildContext context, {
+    required String label,
+    required String value,
+    Color? valueColor,
+    bool isFirst = false,
+    bool isLast = false,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      children: [
+        if (!isFirst) ...[
+          Divider(color: colorScheme.outlineVariant.withOpacity(0.5), height: 1),
+          const SizedBox(height: 14),
+        ],
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14),
+            ),
+            Flexible(
+              child: Text(
+                value,
+                textAlign: TextAlign.end,
+                style: TextStyle(
+                  color: valueColor ?? colorScheme.onSurface,
+                  fontSize: 13,
+                  fontFamily: 'monospace',
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ),
+        if (!isLast) const SizedBox(height: 14),
+      ],
     );
   }
 }
