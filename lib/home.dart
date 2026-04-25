@@ -12,7 +12,7 @@ class RootHomePage extends StatelessWidget {
           backgroundColor: Colors.transparent,
           title: const Text(
             "NekoSU",
-            style: TextStyle(fontWeight: FontWeight.normal, fontSize: 12.0),
+            style: TextStyle(fontWeight: FontWeight.normal, fontSize: 20.0),
           ),
         ),
         Expanded(
