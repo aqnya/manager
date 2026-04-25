@@ -63,7 +63,6 @@ jobs:
 
     - name: Build ncore
       run: |
-          git clone https://github.com/FMAC-Team/ncore.git
           mkdir -p android/app/src/main/jniLibs/arm64-v8a/
           cd ncore
           ../zig-x86_64-linux-0.16.0/zig build -Dtarget=aarch64-linux-android -Doptimize=ReleaseSafe -Dndk-sysroot=$ANDROID_HOME/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/sysroot
