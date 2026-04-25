@@ -8,9 +8,6 @@ class RootHomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("nekosu", style: TextStyle(fontWeight: FontWeight.normal)),
-        actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.info_outline)),
-        ],
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
