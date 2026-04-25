@@ -1,15 +1,19 @@
-import 'dart:io';
+import 'dart:ffi';
+import 'package:ffi/ffi.dart';
 
-Future<String> getKernelReleaseByCmd() async {
+final _lib = DynamicLibrary.open('libncore.so');
+
+final _getKernelRelease = _lib
+    .lookup<NativeFunction<Int32 Function(Pointer<Utf8>, Size)>>('get_kernel_release')
+    .asFunction<int Function(Pointer<Utf8>, int)>();
+
+String getKernelRelease() {
+  final buf = calloc<Utf8>(256);
   try {
-    final result = await Process.run('/system/bin/uname', ['-r']);
-
-    if (result.exitCode == 0) {
-      return (result.stdout as String).trim();
-    } else {
-      return "uname failed: ${result.stderr}";
-    }
-  } catch (e) {
-    return "error: $e";
+    final n = _getKernelRelease(buf, 256);
+    if (n < 0) return 'uname failed';
+    return buf.toDartString(length: n);
+  } finally {
+    calloc.free(buf);
   }
 }
