@@ -6,12 +6,7 @@ import 'home.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LiquidGlassWidgets.initialize();
-  runApp(
-    LiquidGlassWidgets.wrap(
-      const MyApp(),
-      adaptiveQuality: true,
-    ),
-  );
+  runApp(LiquidGlassWidgets.wrap(const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -54,31 +49,29 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GlassBackdropScope(
-      child: Scaffold(
-        extendBody: true, 
-        body: IndexedStack(index: _index, children: _pages),
-        bottomNavigationBar: GlassBottomBar(
-          selectedIndex: _index,
-          onTabSelected: (index) => setState(() => _index = index),
-          tabs: const [
-            GlassBottomBarTab(
-              label: '首页',
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-            ),
-            GlassBottomBarTab(
-              label: '历史',
-              icon: Icon(Icons.history_outlined),
-              activeIcon: Icon(Icons.history),
-            ),
-            GlassBottomBarTab(
-              label: '设置',
-              icon: Icon(Icons.settings_outlined),
-              activeIcon: Icon(Icons.settings),
-            ),
-          ],
-        ),
+    return Scaffold(
+      extendBody: true,
+      body: IndexedStack(index: _index, children: _pages),
+      bottomNavigationBar: GlassBottomBar(
+        selectedIndex: _index,
+        onTabSelected: (index) => setState(() => _index = index),
+        tabs: const [
+          GlassBottomBarTab(
+            label: '首页',
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+          ),
+          GlassBottomBarTab(
+            label: '历史',
+            icon: Icon(Icons.history_outlined),
+            activeIcon: Icon(Icons.history),
+          ),
+          GlassBottomBarTab(
+            label: '设置',
+            icon: Icon(Icons.settings_outlined),
+            activeIcon: Icon(Icons.settings),
+          ),
+        ],
       ),
     );
   }
