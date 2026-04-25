@@ -70,7 +70,7 @@ class _RootHomePageState extends State<RootHomePage> {
           colors: [primary, Color.lerp(primary, Colors.black, 0.25)!],
         ),
       ),
-      clipBehavior: Clip.hardEdge,
+      clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
           Positioned(
