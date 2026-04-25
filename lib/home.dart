@@ -116,8 +116,8 @@ class RootHomePage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: Text(
-          //          '5.15.xx-android14-gki',
-          getKernelRelease,
+                    //          '5.15.xx-android14-gki',
+                    getKernelRelease(),
                     style: TextStyle(
                       color: onPrimary,
                       fontSize: 12,
