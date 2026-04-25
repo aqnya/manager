@@ -9,17 +9,23 @@ class RootHomePage extends StatefulWidget {
 }
 
 class _RootHomePageState extends State<RootHomePage> {
-  String _kernelVersion = '获取中...';
+  String _kernelVersion = 'loading...';
+  String _selinuxStatus = 'loading...';
 
   @override
   void initState() {
     super.initState();
-    _loadKernelVersion();
+    _loadInfo();
   }
 
-  Future<void> _loadKernelVersion() async {
-    final version = await getKernelRelease();
-    if (mounted) setState(() => _kernelVersion = version);
+  Future<void> _loadInfo() async {
+    final kernel_version = await getKernelRelease();
+    final selinux_status = await getSELinuxStatus();
+    if (mounted)
+      setState(() {
+        _kernelVersion = kernel_version;
+        _selinuxStatus = selinux_status;
+      });
   }
 
   @override

@@ -9,6 +9,10 @@ final _getKernelRelease = _lib
     )
     .asFunction<int Function(Pointer<Utf8>, int)>();
 
+final _getSELinuxStatus = _lib
+    .lookup<NativeFunction<Int32 Function()>>('get_selinux_status')
+    .asFunction<int Function()>();
+
 String getKernelRelease() {
   final buf = calloc<Uint8>(256);
   try {
@@ -19,4 +23,9 @@ String getKernelRelease() {
   } finally {
     calloc.free(buf);
   }
+}
+
+String getSELinuxStatus() {
+  final status = _getSELinuxStatus();
+  return status == 0 ? 'Permissive' : 'Enforcing';
 }
