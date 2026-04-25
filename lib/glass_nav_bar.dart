@@ -39,10 +39,7 @@ class _GlassNavBarState extends State<GlassNavBar>
       duration: const Duration(milliseconds: 420),
     );
 
-    _anim = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    );
+    _anim = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
   }
 
   @override
@@ -54,10 +51,7 @@ class _GlassNavBarState extends State<GlassNavBar>
       final to = widget.selectedIndex.toDouble();
 
       _anim = Tween<double>(begin: from, end: to).animate(
-        CurvedAnimation(
-          parent: _controller,
-          curve: Curves.easeOutCubic,
-        ),
+        CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
       );
 
       _currentIndex = to;
@@ -70,16 +64,11 @@ class _GlassNavBarState extends State<GlassNavBar>
     final bottom = MediaQuery.paddingOf(context).bottom;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-        24,
-        0,
-        24,
-        bottom > 0 ? bottom + 8 : 16,
-      ),
+      padding: EdgeInsets.fromLTRB(24, 0, 24, bottom > 0 ? bottom + 8 : 16),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(40),
         child: GlassContainer(
-          quality: GlassQuality.premium,
+          quality: GlassQuality.standard,
           child: SizedBox(
             height: 56,
             child: LayoutBuilder(
@@ -175,11 +164,7 @@ class _NavItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
-    final color = Color.lerp(
-      scheme.onSurfaceVariant,
-      scheme.primary,
-      t,
-    )!;
+    final color = Color.lerp(scheme.onSurfaceVariant, scheme.primary, t)!;
 
     final scale = 0.9 + (t * 0.15);
 
@@ -194,11 +179,7 @@ class _NavItemWidget extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  t > 0.5 ? activeIcon : icon,
-                  size: 22,
-                  color: color,
-                ),
+                Icon(t > 0.5 ? activeIcon : icon, size: 22, color: color),
                 ClipRect(
                   child: Align(
                     widthFactor: t,

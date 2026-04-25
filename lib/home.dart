@@ -242,7 +242,12 @@ class RootHomePage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _buildInfoRow(context, label: '内核版本', value: '5.15.xx-android14-gki', isFirst: true),
+          _buildInfoRow(
+            context,
+            label: '内核版本',
+            value: '5.15.xx-android14-gki',
+            isFirst: true,
+          ),
           _buildInfoRow(context, label: 'SELinux', value: 'Enforcing'),
           _buildInfoRow(context, label: 'Root 状态', value: '已激活'),
           _buildInfoRow(
@@ -269,7 +274,10 @@ class RootHomePage extends StatelessWidget {
     return Column(
       children: [
         if (!isFirst) ...[
-          Divider(color: colorScheme.outlineVariant.withOpacity(0.5), height: 1),
+          Divider(
+            color: colorScheme.outlineVariant.withOpacity(0.5),
+            height: 1,
+          ),
           const SizedBox(height: 14),
         ],
         Row(
@@ -277,7 +285,10 @@ class RootHomePage extends StatelessWidget {
           children: [
             Text(
               label,
-              style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14),
+              style: TextStyle(
+                color: colorScheme.onSurfaceVariant,
+                fontSize: 14,
+              ),
             ),
             Flexible(
               child: Text(
