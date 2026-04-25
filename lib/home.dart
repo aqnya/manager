@@ -100,7 +100,7 @@ class RootHomePage extends StatelessWidget {
                   style: TextStyle(
                     color: onPrimary,
                     fontSize: 32,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w400,
                     letterSpacing: -0.5,
                   ),
                 ),
