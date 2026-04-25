@@ -58,7 +58,6 @@ pub fn build(b: *std.Build) !void {
         lib.root_module.linkSystemLibrary("log", .{});
         lib.root_module.linkSystemLibrary("c", .{});
         lib.setLibCFile(libc_path);
-
     }
 
     b.installArtifact(lib);
