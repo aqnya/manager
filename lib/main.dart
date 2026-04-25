@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
-
 import 'home.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await LiquidGlassWidgets.initialize();
-  runApp(LiquidGlassWidgets.wrap(const MyApp()));
+void main() {
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -16,15 +12,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lightScheme = ColorScheme.fromSeed(seedColor: _defaultColorSeed);
-    final darkScheme = ColorScheme.fromSeed(
-      seedColor: _defaultColorSeed,
-      brightness: Brightness.dark,
-    );
-
     return MaterialApp(
-      theme: ThemeData(useMaterial3: true, colorScheme: lightScheme),
-      darkTheme: ThemeData(useMaterial3: true, colorScheme: darkScheme),
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: _defaultColorSeed),
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: _defaultColorSeed,
+          brightness: Brightness.dark,
+        ),
+      ),
       themeMode: ThemeMode.system,
       home: const MainPage(),
     );
@@ -49,29 +48,26 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-  final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: colorScheme.surface, 
-      extendBody: true,
       body: IndexedStack(index: _index, children: _pages),
-      bottomNavigationBar: GlassBottomBar(
+      bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
-        onTabSelected: (i) => setState(() => _index = i),
-        tabs: const [
-          GlassBottomBarTab(
-            label: '首页',
+        onDestinationSelected: (i) => setState(() => _index = i),
+        destinations: const [
+          NavigationDestination(
             icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home_rounded),
+            selectedIcon: Icon(Icons.home),
+            label: '首页',
           ),
-          GlassBottomBarTab(
-            label: '历史',
+          NavigationDestination(
             icon: Icon(Icons.history_outlined),
-            activeIcon: Icon(Icons.history_rounded),
+            selectedIcon: Icon(Icons.history),
+            label: '历史',
           ),
-          GlassBottomBarTab(
-            label: '设置',
+          NavigationDestination(
             icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings_rounded),
+            selectedIcon: Icon(Icons.settings),
+            label: '设置',
           ),
         ],
       ),
