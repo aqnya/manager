@@ -3,34 +3,16 @@ import 'package:flutter/material.dart';
 class RootHomePage extends StatelessWidget {
   const RootHomePage({super.key});
 
- @override
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         AppBar(
           scrolledUnderElevation: 0,
           backgroundColor: Colors.transparent,
-          title: RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: 'Neko',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w300,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-                TextSpan(
-                  text: 'SU',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ],
-            ),
+          title: const Text(
+            "NekoSU",
+            style: TextStyle(fontWeight: FontWeight.normal, fontSize: 24.0),
           ),
         ),
         Expanded(
