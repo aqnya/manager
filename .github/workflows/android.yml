@@ -47,7 +47,30 @@ jobs:
         key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
           gradle-${{ runner.os }}-
+          
+    - name: Cache Zig 0.15.2
+      id: cache-zig-015
+      uses: actions/cache@v4
+      with:
+        path: zig-x86_64-linux-0.15.2
+        key: zig-0.15.2
+        
+    - name: Download Zig 0.15.2
+      if: steps.cache-zig-015.outputs.cache-hit != 'true'
+      run: |
+        curl -OL https://ziglang.org/download/0.15.2/zig-x86_64-linux-0.15.2.tar.xz
+        tar -xf zig-x86_64-linux-0.15.2.tar.xz
 
+    - name: Build ncore
+      run: |
+          git clone https://github.com/FMAC-Team/ncore.git
+          mkdir -p android/app/src/main/jniLibs/arm64-v8a/
+          cd ncore
+          ../zig-x86_64-linux-0.15.2/zig build \
+            -Dtarget=aarch64-linux-android \
+            -Doptimize=ReleaseSafe
+           cp zig-out/lib/libncore.so ../android/app/src/main/jniLibs/arm64-v8a/
+        
     - run: flutter pub get
  #   - run: flutter test
     - run: flutter build apk --release --target-platform android-arm64
