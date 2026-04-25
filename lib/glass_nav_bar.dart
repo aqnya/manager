@@ -35,22 +35,25 @@ class GlassNavBar extends StatelessWidget {
         right: 32,
         bottom: bottom > 0 ? bottom + 8 : 20,
       ),
-      child: GlassContainer(
+      child: ClipRRect(
         borderRadius: BorderRadius.circular(48),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(
-              _items.length,
-              (i) => Expanded(
-                child: _NavTab(
-                  item: _items[i],
-                  selected: i == selectedIndex,
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    onTap(i);
-                  },
+        child: GlassContainer(
+          quality: GlassQuality.premium,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(
+                _items.length,
+                (i) => Expanded(
+                  child: _NavTab(
+                    item: _items[i],
+                    selected: i == selectedIndex,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      onTap(i);
+                    },
+                  ),
                 ),
               ),
             ),
@@ -91,7 +94,9 @@ class _NavTab extends StatelessWidget {
             vertical: 9,
           ),
           decoration: BoxDecoration(
-            color: selected ? activeColor.withOpacity(0.15) : Colors.transparent,
+            color: selected
+                ? activeColor.withOpacity(0.15)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(32),
           ),
           child: Row(
