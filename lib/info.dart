@@ -2,39 +2,39 @@ import 'dart:ffi';
 import 'dart:io';
 import 'package:ffi/ffi.dart';
 
-typedef NativeSyscall = Int64 Function(Int64 number, Pointer<Void> arg);
-typedef DartSyscall = int Function(int number, Pointer<Void> arg);
+final DynamicLibrary _libc = DynamicLibrary.open('libc.so');
 
-String getKernelReleaseDirectly() {
-  final DynamicLibrary libc = DynamicLibrary.open('libc.so');
+typedef NativeUname = Int32 Function(Pointer<Utsname>);
+typedef DartUname = int Function(Pointer<Utsname>);
 
-  final syscall = libc.lookupFunction<NativeSyscall, DartSyscall>('syscall');
+final DartUname _uname =
+    _libc.lookupFunction<NativeUname, DartUname>('uname');
 
-  int syscallNumber;
-  if (Platform.isAndroid) {
-    final String arch = ProcessInfo.packageConfig ?? ""; 
-    if (RegExp(r'arm64|aarch64').hasMatch(Platform.version.toLowerCase())) {
-      syscallNumber = 160; 
-    } else {
-      syscallNumber = 63;
-    }
-  } else {
-    return "Only for Android/Linux";
-  }
-  final Pointer<Uint8> buffer = calloc<Uint8>(65 * 5);
+class Utsname extends Struct {
+  @Array(65)
+  external Array<Int8> sysname;
+
+  @Array(65)
+  external Array<Int8> nodename;
+
+  @Array(65)
+  external Array<Int8> release;
+
+  @Array(65)
+  external Array<Int8> version;
+
+  @Array(65)
+  external Array<Int8> machine;
+}
+
+String getKernelRelease() {
+  final uts = calloc<Utsname>();
 
   try {
-    final int result = syscall(syscallNumber, buffer.cast<Void>());
+    if (_uname(uts) != 0) return "uname failed";
 
-    if (result == 0) {
-      final releasePtr = buffer.elementAt(130);
-      return releasePtr.cast<Utf8>().toDartString();
-    } else {
-      return "Syscall failed: $result";
-    }
-  } catch (e) {
-    return "Error: $e";
+    return uts.release.cast<Int8>().toDartString();
   } finally {
-    calloc.free(buffer);
+    calloc.free(uts);
   }
 }
