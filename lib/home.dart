@@ -73,6 +73,7 @@ class _RootHomePageState extends State<RootHomePage> {
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
+        /*
           Positioned(
             right: -24,
             bottom: -24,
@@ -97,7 +98,6 @@ class _RootHomePageState extends State<RootHomePage> {
               ),
             ),
           ),
-          /*
           Positioned(
             right: 20,
             top: 20,
