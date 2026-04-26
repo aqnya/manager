@@ -97,6 +97,7 @@ class _RootHomePageState extends State<RootHomePage> {
               ),
             ),
           ),
+          /*
           Positioned(
             right: 20,
             top: 20,
@@ -106,6 +107,7 @@ class _RootHomePageState extends State<RootHomePage> {
               color: Colors.white.withOpacity(0.12),
             ),
           ),
+          */
           Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
