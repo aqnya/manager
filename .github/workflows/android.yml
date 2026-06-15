@@ -1,0 +1,54 @@
+name: Flutter CI with Rust (ncore)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "lib/**"
+      - "pubspec.yaml"
+      - "android/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.6'
+          cache: true
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+
+      - name: Build ncore
+        run: |
+          git clone https://github.com/nksu-crew/ncore.git
+          cd ncore
+          cargo install cargo-ndk
+          cargo ndk -t arm64-v8a -o ../android/app/src/main/jniLibs/ build --release
+
+      - name: Build APK
+        run: |
+          flutter pub get
+          flutter build apk --release
+
+      - name: Upload Release Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
