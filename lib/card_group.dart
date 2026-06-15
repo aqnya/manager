@@ -21,19 +21,21 @@ class CardGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.onSurfaceVariant;
+    final bgColor = Theme.of(context).colorScheme.surfaceContainerHigh;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (int i = 0; i < children.length; i++)
+          for (int i = 0; i < children.length; i++) ...[
+            if (i > 0) const SizedBox(height: 4),
             _CardItem(
               index: i,
               total: children.length,
-              color: color,
+              color: bgColor,
               child: children[i],
             ),
+          ],
         ],
       ),
     );
@@ -43,7 +45,6 @@ class CardGroup extends StatelessWidget {
 class _CardItem extends StatelessWidget {
   final int index, total;
   final Color color;
-  final Widget child;
   const _CardItem({
     required this.index,
     required this.total,
@@ -51,25 +52,18 @@ class _CardItem extends StatelessWidget {
     required this.child,
   });
 
+  final Widget child;
+
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: color,
+    return ClipRRect(
       borderRadius: _groupRadius(index, total),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: [
-          if (index > 0)
-            Divider(
-              height: 1,
-              thickness: 1,
-              indent: 56, // 对齐 ListTile leading 后的内容
-              color: Theme.of(
-                context,
-              ).colorScheme.outlineVariant.withValues(alpha: 0.4),
-            ),
-          child,
-        ],
+      child: ColoredBox(
+        color: color,
+        child: Material(
+          type: MaterialType.transparency,
+          child: child,
+        ),
       ),
     );
   }
