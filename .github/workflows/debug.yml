@@ -23,16 +23,6 @@ jobs:
           key: flutter-pub-${{ hashFiles('**/pubspec.lock') }}
           restore-keys: flutter-pub-
 
-      - name: Cache Cargo
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.cargo/bin
-            ~/.cargo/registry
-            ncore/target
-          key: cargo-${{ runner.os }}-${{ hashFiles('ncore/Cargo.lock') }}
-          restore-keys: cargo-${{ runner.os }}-
-
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
