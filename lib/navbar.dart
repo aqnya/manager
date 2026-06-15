@@ -35,7 +35,8 @@ class ModernCapsuleNavBar extends StatelessWidget {
         child: Container(
           height: 68,
           decoration: BoxDecoration(
-            color: scheme.surfaceContainer,
+         //   color: scheme.surfaceContainer,
+            color: scheme.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(34),
           ),
           child: Stack(
