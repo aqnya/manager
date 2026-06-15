@@ -61,7 +61,7 @@ jobs:
       - name: Build APK
         run: |
           flutter pub get
-          flutter build apk --release
+          flutter build apk --release --target-platform android-arm64
 
       - name: Upload Release Artifact
         uses: actions/upload-artifact@v6
