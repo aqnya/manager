@@ -21,7 +21,7 @@ class CardGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.surfaceContainer;
+    final color = Theme.of(context).colorScheme.surfaceContainerHigh;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
