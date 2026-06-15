@@ -8,8 +8,7 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
-      body: ListView(
-      CardGroup(
+      body: CardGroup(
         children: [
           ListTile(
             leading: const Icon(Icons.person_outline),
@@ -49,7 +48,6 @@ class SettingsPage extends StatelessWidget {
           ),
         ],
         ),
-      ),
     );
   }
 }
