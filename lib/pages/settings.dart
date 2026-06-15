@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nekosu/card_group.dart'
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -8,6 +9,7 @@ class SettingsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
+      CardGroup(
         children: [
           ListTile(
             leading: const Icon(Icons.person_outline),
@@ -46,6 +48,7 @@ class SettingsPage extends StatelessWidget {
             onTap: () {},
           ),
         ],
+        ),
       ),
     );
   }
