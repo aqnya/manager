@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:nekosu/pages/home.dart';
-import 'navbar.dart';
-import 'pages/settings.dart';
+import 'package:nekosu/pages/settings.dart';
+import 'package:nekosu/navbar.dart';
+import 'package:nekosu/ffi.dart';
 
 void main() {
   if (ncoreInit() < 0) {
