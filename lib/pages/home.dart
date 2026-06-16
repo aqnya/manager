@@ -65,7 +65,7 @@ class _HomeScreenContent extends StatelessWidget {
                 context,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
             ),
-            actions: const [RebootListPopup()],
+         //   actions: const [RebootListPopup()],
             backgroundColor: Theme.of(context).colorScheme.surface,
             surfaceTintColor: Colors.transparent,
             scrolledUnderElevation: 0,
