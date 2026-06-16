@@ -11,26 +11,29 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static const _fallbackSeed = Colors.teal;
+
   @override
   Widget build(BuildContext context) {
     return DynamicColorBuilder(
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-        final lightScheme =
-        lightDynamic ??
-            ColorScheme.fromSeed(seedColor: Colors.deepPurple);
-        final darkScheme =
-         darkDynamic ??
-            ColorScheme.fromSeed(
-              seedColor: Colors.deepPurple,
-              brightness: Brightness.dark,
-            );
+        final seedColor = lightDynamic?.primary ?? _fallbackSeed;
+
+        final lightScheme = ColorScheme.fromSeed(
+          seedColor: seedColor,
+          brightness: Brightness.light,
+        );
+        final darkScheme = ColorScheme.fromSeed(
+          seedColor: seedColor,
+          brightness: Brightness.dark,
+        );
 
         return MaterialApp(
-          title: 'Flutter Demo',
-          theme: ThemeData(colorScheme: lightScheme),
-          darkTheme: ThemeData(colorScheme: darkScheme),
+          title: 'NekoSU',
+          theme: ThemeData(useMaterial3: true, colorScheme: lightScheme),
+          darkTheme: ThemeData(useMaterial3: true, colorScheme: darkScheme),
           themeMode: ThemeMode.system,
-          home: const MyHomePage(title: 'Flutter Demo Home Page'),
+          home: const MyHomePage(),
         );
       },
     );
@@ -38,9 +41,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
