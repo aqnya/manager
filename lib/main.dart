@@ -5,6 +5,9 @@ import 'navbar.dart';
 import 'pages/settings.dart';
 
 void main() {
+  if (ncoreInit() < 0) {
+    debugPrint("failed to init ncore");
+  }
   runApp(const MyApp());
 }
 
