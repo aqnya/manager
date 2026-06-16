@@ -100,7 +100,7 @@ class CardItem extends StatelessWidget {
     required this.index,
     required this.total,
     required this.child,
-  }) : modifier = null;
+  });
 
   @override
   Widget build(BuildContext context) {
