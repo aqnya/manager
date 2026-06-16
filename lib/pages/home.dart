@@ -1,6 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
-// 对应 InstallStatus enum
 enum InstallStatus { installed, notInstalled }
 
 class HomePage extends StatelessWidget {
@@ -8,20 +8,11 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: 接入真实状态
-    const installStatus = InstallStatus.installed;
-    const suCount = 0;
-    const ruleCount = 0;
-    const showRules = true;
-
-    return _HomeScreenContent(
-      installStatus: installStatus,
-      suCount: suCount,
-      ruleCount: ruleCount,
-      showRules: showRules,
-      onNavigateToApps: () {},
-      onNavigateToRules: () {},
-      onInstallClick: () {},
+    return const _HomeScreenContent(
+      installStatus: InstallStatus.installed,
+      suCount: 0,
+      ruleCount: 0,
+      showRules: true,
     );
   }
 }
@@ -32,18 +23,18 @@ class _HomeScreenContent extends StatelessWidget {
     required this.suCount,
     required this.ruleCount,
     required this.showRules,
-    required this.onNavigateToApps,
-    required this.onNavigateToRules,
-    required this.onInstallClick,
+    this.onNavigateToApps,
+    this.onNavigateToRules,
+    this.onInstallClick,
   });
 
   final InstallStatus installStatus;
   final int suCount;
   final int ruleCount;
   final bool showRules;
-  final VoidCallback onNavigateToApps;
-  final VoidCallback onNavigateToRules;
-  final VoidCallback onInstallClick;
+  final VoidCallback? onNavigateToApps;
+  final VoidCallback? onNavigateToRules;
+  final VoidCallback? onInstallClick;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +55,7 @@ class _HomeScreenContent extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
         child: Column(
           children: [
-            _StatusCard(status: installStatus, onClick: onInstallClick),
+            _StatusCard(status: installStatus, onClick: onInstallClick ?? () {}),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -73,7 +64,7 @@ class _HomeScreenContent extends StatelessWidget {
                     label: 'Superuser',
                     value: suCount.toString(),
                     icon: Icons.numbers,
-                    onClick: onNavigateToApps,
+                    onClick: onNavigateToApps ?? () {},
                   ),
                 ),
                 if (showRules) ...[
@@ -83,7 +74,7 @@ class _HomeScreenContent extends StatelessWidget {
                       label: 'FMAC Rules',
                       value: ruleCount.toString(),
                       icon: Icons.rule,
-                      onClick: onNavigateToRules,
+                      onClick: onNavigateToRules ?? () {},
                     ),
                   ),
                 ],
@@ -210,7 +201,7 @@ class _StatCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     return Card(
-      shape: RoundedCornerShape(24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       elevation: 0,
       color: scheme.surfaceContainer,
       clipBehavior: Clip.antiAlias,
@@ -260,6 +251,22 @@ class _StatCard extends StatelessWidget {
 class _DeviceInfoCard extends StatelessWidget {
   const _DeviceInfoCard();
 
+  static String _kernelVersion() {
+    try {
+      return Platform.operatingSystemVersion;
+    } catch (_) {
+      return 'Linux';
+    }
+  }
+
+  static String _androidVersion() {
+    try {
+      return Platform.operatingSystem;
+    } catch (_) {
+      return 'Android';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -267,7 +274,7 @@ class _DeviceInfoCard extends StatelessWidget {
     final items = [
       (Icons.memory, 'Kernel Version', _kernelVersion()),
       (Icons.android, 'Android Version', _androidVersion()),
-      (Icons.phone_android, 'Device Model', _deviceModel()),
+      (Icons.phone_android, 'Device Model', 'Device'),
       (Icons.settings, 'Manager Version', '1.0.0'),
     ];
 
@@ -275,7 +282,6 @@ class _DeviceInfoCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(28),
       child: Stack(
         children: [
-          // gradient overlay (対応 Brush.verticalGradient + blur)
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -291,7 +297,7 @@ class _DeviceInfoCard extends StatelessWidget {
             ),
           ),
           Card(
-            shape: RoundedCornerShape(28),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
             elevation: 0,
             color: scheme.surfaceContainer,
             child: Column(
@@ -318,17 +324,6 @@ class _DeviceInfoCard extends StatelessWidget {
       ),
     );
   }
-
-  String _kernelVersion() {
-    try {
-      final result = ProcessResult(0, 0, '', '');
-      _ = result; // suppress
-    } catch (_) {}
-    return 'Linux';
-  }
-
-  String _androidVersion() => 'Android';
-  String _deviceModel() => 'Device';
 }
 
 class _DeviceInfoItem extends StatelessWidget {
@@ -432,11 +427,4 @@ class _GlowPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_GlowPainter old) => old.color != color;
-}
-
-// ── helpers ───────────────────────────────────────────────────────────────────
-
-class RoundedCornerShape extends RoundedRectangleBorder {
-  const RoundedCornerShape(double radius)
-      : super(borderRadius: BorderRadius.all(Radius.circular(radius)));
 }
