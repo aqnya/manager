@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:nekosu/pages/home.dart';
 import 'navbar.dart';
 import 'pages/settings.dart';
 
@@ -49,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    const Center(child: Text('Home Page', style: TextStyle(fontSize: 24))),
+    const HomePage(),
     const Center(child: Text('Search Page', style: TextStyle(fontSize: 24))),
     const SettingsPage(),
   ];
