@@ -60,10 +60,7 @@ class _CardItem extends StatelessWidget {
       borderRadius: _groupRadius(index, total),
       child: ColoredBox(
         color: color,
-        child: Material(
-          type: MaterialType.transparency,
-          child: child,
-        ),
+        child: Material(type: MaterialType.transparency, child: child),
       ),
     );
   }

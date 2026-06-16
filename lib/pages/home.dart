@@ -17,6 +17,23 @@ class HomePage extends StatelessWidget {
   }
 }
 
+class RebootListPopup extends StatelessWidget {
+  const RebootListPopup({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.more_vert),
+      onSelected: (value) {},
+      itemBuilder: (context) => [
+        const PopupMenuItem(value: 'reboot', child: Text('重启')),
+        const PopupMenuItem(value: 'recovery', child: Text('重启到 Recovery')),
+        const PopupMenuItem(value: 'bootloader', child: Text('重启到 Bootloader')),
+      ],
+    );
+  }
+}
+
 class _HomeScreenContent extends StatelessWidget {
   const _HomeScreenContent({
     required this.installStatus,
@@ -39,51 +56,58 @@ class _HomeScreenContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'NekoSU',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w900,
-              ),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-        child: Column(
-          children: [
-            _StatusCard(status: installStatus, onClick: onInstallClick ?? () {}),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _StatCard(
-                    label: 'Superuser',
-                    value: suCount.toString(),
-                    icon: Icons.numbers,
-                    onClick: onNavigateToApps ?? () {},
-                  ),
-                ),
-                if (showRules) ...[
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _StatCard(
-                      label: 'FMAC Rules',
-                      value: ruleCount.toString(),
-                      icon: Icons.rule,
-                      onClick: onNavigateToRules ?? () {},
-                    ),
-                  ),
-                ],
-              ],
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar.large(
+            title: Text(
+              'NekoSU',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
             ),
-            const SizedBox(height: 16),
-            const _DeviceInfoCard(),
-          ],
-        ),
+            actions: const [RebootListPopup()],
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            surfaceTintColor: Colors.transparent,
+            scrolledUnderElevation: 0,
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _StatusCard(
+                  status: installStatus,
+                  onClick: onInstallClick ?? () {},
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _StatCard(
+                        label: 'Superuser',
+                        value: suCount.toString(),
+                        icon: Icons.numbers,
+                        onClick: onNavigateToApps ?? () {},
+                      ),
+                    ),
+                    if (showRules) ...[
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _StatCard(
+                          label: 'FMAC Rules',
+                          value: ruleCount.toString(),
+                          icon: Icons.rule,
+                          onClick: onNavigateToRules ?? () {},
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const _DeviceInfoCard(),
+              ]),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -148,7 +172,8 @@ class _StatusCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
                               color: contentColor,
                               fontWeight: FontWeight.w600,
                             ),
@@ -157,8 +182,8 @@ class _StatusCard extends StatelessWidget {
                       Text(
                         sub,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: contentColor.withValues(alpha: 0.7),
-                            ),
+                          color: contentColor.withValues(alpha: 0.7),
+                        ),
                       ),
                     ],
                   ),
@@ -214,7 +239,11 @@ class _StatCard extends StatelessWidget {
               Positioned(
                 right: 18,
                 bottom: 12,
-                child: Icon(icon, size: 58, color: scheme.primary.withValues(alpha: 0.35)),
+                child: Icon(
+                  icon,
+                  size: 58,
+                  color: scheme.primary.withValues(alpha: 0.35),
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.all(20),
@@ -223,7 +252,8 @@ class _StatCard extends StatelessWidget {
                   children: [
                     Text(
                       value,
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: scheme.onSurface,
                           ),
@@ -232,8 +262,8 @@ class _StatCard extends StatelessWidget {
                     Text(
                       label,
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: scheme.onSurface.withValues(alpha: 0.6),
-                          ),
+                        color: scheme.onSurface.withValues(alpha: 0.6),
+                      ),
                     ),
                   ],
                 ),
@@ -297,7 +327,9 @@ class _DeviceInfoCard extends StatelessWidget {
             ),
           ),
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
             elevation: 0,
             color: scheme.surfaceContainer,
             child: Column(
@@ -361,17 +393,17 @@ class _DeviceInfoItem extends StatelessWidget {
               Text(
                 title,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: scheme.onSurface.withValues(alpha: 0.55),
-                      fontWeight: FontWeight.w500,
-                    ),
+                  color: scheme.onSurface.withValues(alpha: 0.55),
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: scheme.onSurface,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  color: scheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -419,9 +451,12 @@ class _GlowPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final r = size.shortestSide / 1.8;
     final paint = Paint()
-      ..shader = RadialGradient(
-        colors: [color.withValues(alpha: 0.25), Colors.transparent],
-      ).createShader(Rect.fromCircle(center: size.center(Offset.zero), radius: r));
+      ..shader =
+          RadialGradient(
+            colors: [color.withValues(alpha: 0.25), Colors.transparent],
+          ).createShader(
+            Rect.fromCircle(center: size.center(Offset.zero), radius: r),
+          );
     canvas.drawCircle(size.center(Offset.zero), r, paint);
   }
 

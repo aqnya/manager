@@ -20,7 +20,9 @@ class ColorPage extends StatelessWidget {
     ];
 
     for (final (name, color) in roles) {
-      debugPrint('$name: #${color.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}');
+      debugPrint(
+        '$name: #${color.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}',
+      );
     }
 
     return Scaffold(
@@ -48,7 +50,8 @@ class _ColorTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hex = '#${color.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}';
+    final hex =
+        '#${color.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}';
     final luminance = color.computeLuminance();
     final textColor = luminance > 0.5 ? Colors.black : Colors.white;
 
@@ -62,8 +65,14 @@ class _ColorTile extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(name, style: TextStyle(color: textColor, fontWeight: FontWeight.w500)),
-          Text(hex, style: TextStyle(color: textColor, fontFamily: 'monospace')),
+          Text(
+            name,
+            style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
+          ),
+          Text(
+            hex,
+            style: TextStyle(color: textColor, fontFamily: 'monospace'),
+          ),
         ],
       ),
     );
