@@ -58,14 +58,14 @@ class _HomeScreenContent extends StatelessWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar.large(
+          SliverAppBar(
             title: Text(
               'NekoSU',
               style: Theme.of(
                 context,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
             ),
-         //   actions: const [RebootListPopup()],
+            actions: const [RebootListPopup()],
             backgroundColor: Theme.of(context).colorScheme.surface,
             surfaceTintColor: Colors.transparent,
             scrolledUnderElevation: 0,
