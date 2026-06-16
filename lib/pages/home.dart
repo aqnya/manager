@@ -58,7 +58,7 @@ class _HomeScreenContent extends StatelessWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
+          SliverAppBar.medium(
             title: Text(
               'NekoSU',
               style: Theme.of(
