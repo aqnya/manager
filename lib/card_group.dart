@@ -94,7 +94,6 @@ class CardItem extends StatelessWidget {
   final int index;
   final int total;
   final Widget child;
-  final Modifier? modifier; // 预留，对齐 kt 签名习惯
 
   const CardItem({
     super.key,
