@@ -14,11 +14,11 @@ class HomePage extends StatelessWidget {
   final installStatus = NCore.isInstalled()
         ? InstallStatus.installed
         : InstallStatus.notInstalled;
-    return const _HomeScreenContent(
+    return _HomeScreenContent(
       installStatus: installStatus,
       suCount: 0,
       ruleCount: 0,
-      showRules: true,
+      showRules: false,
     );
   }
 }
