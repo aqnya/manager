@@ -1,0 +1,86 @@
+{
+  "appTitle": "NekoSU",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "homeLabel": "Home",
+  "@homeLabel": {
+    "description": "Label for the Home tab"
+  },
+  "searchLabel": "Search",
+  "@searchLabel": {
+    "description": "Label for the Search tab"
+  },
+  "settingsLabel": "Settings",
+  "@settingsLabel": {
+    "description": "Label for the Settings tab"
+  },
+  "searchPageText": "Search Page",
+  "@searchPageText": {
+    "description": "Text displayed on the search page"
+  },
+  "reboot": "Reboot",
+  "@reboot": {
+    "description": "Reboot the device"
+  },
+  "rebootToRecovery": "Reboot to Recovery",
+  "@rebootToRecovery": {
+    "description": "Reboot to recovery mode"
+  },
+  "rebootToBootloader": "Reboot to Bootloader",
+  "@rebootToBootloader": {
+    "description": "Reboot to bootloader mode"
+  },
+  "superuser": "Superuser",
+  "@superuser": {
+    "description": "Superuser feature label"
+  },
+  "fmacRules": "FMAC Rules",
+  "@fmacRules": {
+    "description": "FMAC Rules feature label"
+  },
+  "installed": "Installed",
+  "@installed": {
+    "description": "Status indicating the software is installed"
+  },
+  "notInstalled": "Not Installed",
+  "@notInstalled": {
+    "description": "Status indicating the software is not installed"
+  },
+  "running": "Running",
+  "@running": {
+    "description": "Status indicating the software is running"
+  },
+  "clickToInstall": "Click to install",
+  "@clickToInstall": {
+    "description": "Instruction to click for installation"
+  },
+  "kernelVersion": "Kernel Version",
+  "@kernelVersion": {
+    "description": "Label for kernel version info"
+  },
+  "androidVersion": "Android Version",
+  "@androidVersion": {
+    "description": "Label for Android version info"
+  },
+  "deviceModel": "Device Model",
+  "@deviceModel": {
+    "description": "Label for device model info"
+  },
+  "managerVersion": "Manager Version",
+  "@managerVersion": {
+    "description": "Label for manager version info"
+  },
+  "appearance": "Appearance",
+  "@appearance": {
+    "description": "Settings section for appearance"
+  },
+  "followSystem": "Follow System",
+  "@followSystem": {
+    "description": "Theme mode option to follow system settings"
+  },
+  "colorSchemeDiagnostics": "Color Scheme Diagnostics",
+  "@colorSchemeDiagnostics": {
+    "description": "Title for the color scheme diagnostic page"
+  }
+}

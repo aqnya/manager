@@ -7,12 +7,14 @@ on:
     paths:
       - "lib/**"
       - "pubspec.yaml"
+      - "l10n.yaml"
       - "android/**"
   pull_request:
     branches: [ "main" ]
     paths:
       - "lib/**"
       - "pubspec.yaml"
+      - "l10n.yaml"
       - "android/**"
 
 jobs:

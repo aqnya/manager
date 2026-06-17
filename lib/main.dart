@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:nekosu/pages/home.dart';
 import 'package:nekosu/pages/settings.dart';
@@ -33,7 +35,17 @@ class MyApp extends StatelessWidget {
         );
 
         return MaterialApp(
-          title: 'NekoSU',
+          onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en', ''),
+            Locale('zh', ''),
+          ],
           theme: ThemeData(useMaterial3: true, colorScheme: lightScheme),
           darkTheme: ThemeData(useMaterial3: true, colorScheme: darkScheme),
           themeMode: ThemeMode.system,
@@ -54,14 +66,16 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [
-    const HomePage(),
-    const Center(child: Text('Search Page', style: TextStyle(fontSize: 24))),
-    const SettingsPage(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    final List<Widget> _pages = [
+      const HomePage(),
+      Center(child: Text(l10n.searchPageText, style: const TextStyle(fontSize: 24))),
+      const SettingsPage(),
+    ];
+
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: ModernCapsuleNavBar(
@@ -71,21 +85,21 @@ class _MyHomePageState extends State<MyHomePage> {
             _selectedIndex = index;
           });
         },
-        tabs: const [
+        tabs: [
           NavBarTab(
-            label: 'Home',
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
+            label: l10n.homeLabel,
+            icon: const Icon(Icons.home_outlined),
+            activeIcon: const Icon(Icons.home),
           ),
           NavBarTab(
-            label: 'Search',
-            icon: Icon(Icons.search_outlined),
-            activeIcon: Icon(Icons.search),
+            label: l10n.searchLabel,
+            icon: const Icon(Icons.search_outlined),
+            activeIcon: const Icon(Icons.search),
           ),
           NavBarTab(
-            label: 'Settings',
-            icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings),
+            label: l10n.settingsLabel,
+            icon: const Icon(Icons.settings_outlined),
+            activeIcon: const Icon(Icons.settings),
           ),
         ],
       ),

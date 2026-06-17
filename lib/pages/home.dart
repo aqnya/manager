@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum InstallStatus { installed, notInstalled }
 
@@ -22,13 +23,14 @@ class RebootListPopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert),
       onSelected: (value) {},
       itemBuilder: (context) => [
-        const PopupMenuItem(value: 'reboot', child: Text('重启')),
-        const PopupMenuItem(value: 'recovery', child: Text('重启到 Recovery')),
-        const PopupMenuItem(value: 'bootloader', child: Text('重启到 Bootloader')),
+        PopupMenuItem(value: 'reboot', child: Text(l10n.reboot)),
+        PopupMenuItem(value: 'recovery', child: Text(l10n.rebootToRecovery)),
+        PopupMenuItem(value: 'bootloader', child: Text(l10n.rebootToBootloader)),
       ],
     );
   }
@@ -55,12 +57,13 @@ class _HomeScreenContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           SliverAppBar.medium(
             title: Text(
-              'NekoSU',
+              l10n.appTitle,
               style: Theme.of(
                 context,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
@@ -83,7 +86,7 @@ class _HomeScreenContent extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _StatCard(
-                        label: 'Superuser',
+                        label: l10n.superuser,
                         value: suCount.toString(),
                         icon: Icons.numbers,
                         onClick: onNavigateToApps ?? () {},
@@ -93,7 +96,7 @@ class _HomeScreenContent extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _StatCard(
-                          label: 'FMAC Rules',
+                          label: l10n.fmacRules,
                           value: ruleCount.toString(),
                           icon: Icons.rule,
                           onClick: onNavigateToRules ?? () {},
@@ -125,6 +128,7 @@ class _StatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isDark = scheme.surface.computeLuminance() < 0.5;
+    final l10n = AppLocalizations.of(context)!;
 
     final containerColor = switch (status) {
       InstallStatus.installed => scheme.primaryContainer,
@@ -141,12 +145,12 @@ class _StatusCard extends StatelessWidget {
       InstallStatus.notInstalled => Icons.system_update,
     };
     final title = switch (status) {
-      InstallStatus.installed => 'Installed',
-      InstallStatus.notInstalled => 'Not Installed',
+      InstallStatus.installed => l10n.installed,
+      InstallStatus.notInstalled => l10n.notInstalled,
     };
     final sub = switch (status) {
-      InstallStatus.installed => 'Running',
-      InstallStatus.notInstalled => 'Click to install',
+      InstallStatus.installed => l10n.running,
+      InstallStatus.notInstalled => l10n.clickToInstall,
     };
 
     return ClipRRect(
@@ -300,12 +304,13 @@ class _DeviceInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     final items = [
-      (Icons.memory, 'Kernel Version', _kernelVersion()),
-      (Icons.android, 'Android Version', _androidVersion()),
-      (Icons.phone_android, 'Device Model', 'Device'),
-      (Icons.settings, 'Manager Version', '1.0.0'),
+      (Icons.memory, l10n.kernelVersion, _kernelVersion()),
+      (Icons.android, l10n.androidVersion, _androidVersion()),
+      (Icons.phone_android, l10n.deviceModel, 'Device'),
+      (Icons.settings, l10n.managerVersion, '1.0.0'),
     ];
 
     return ClipRRect(

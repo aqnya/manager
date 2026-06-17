@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ColorPage extends StatelessWidget {
   const ColorPage({super.key});
@@ -6,6 +7,7 @@ class ColorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     final roles = [
       ('surface', scheme.surface),
@@ -28,7 +30,7 @@ class ColorPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: AppBar(
-        title: const Text('Color Scheme Diagnostics'),
+        title: Text(l10n.colorSchemeDiagnostics),
         backgroundColor: scheme.surfaceContainer,
       ),
       body: ListView(

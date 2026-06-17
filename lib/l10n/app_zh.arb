@@ -1,0 +1,23 @@
+{
+  "appTitle": "NekoSU",
+  "homeLabel": "首页",
+  "searchLabel": "搜索",
+  "settingsLabel": "设置",
+  "searchPageText": "搜索页",
+  "reboot": "重启",
+  "rebootToRecovery": "重启到 Recovery",
+  "rebootToBootloader": "重启到 Bootloader",
+  "superuser": "超级用户",
+  "fmacRules": "FMAC 规则",
+  "installed": "已安装",
+  "notInstalled": "未安装",
+  "running": "正在运行",
+  "clickToInstall": "点击安装",
+  "kernelVersion": "内核版本",
+  "androidVersion": "Android 版本",
+  "deviceModel": "设备型号",
+  "managerVersion": "管理器版本",
+  "appearance": "外观",
+  "followSystem": "跟随系统",
+  "colorSchemeDiagnostics": "颜色方案诊断"
+}

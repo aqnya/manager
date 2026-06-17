@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:nekosu/card_group.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -6,17 +7,18 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          const SliverAppBar.medium(title: Text('Settings')),
+          SliverAppBar.medium(title: Text(l10n.settingsLabel)),
           SliverToBoxAdapter(
             child: CardGroup(
               children: [
                 ListRow(
                   icon: const Icon(Icons.palette_outlined),
-                  headline: const Text('外观'),
-                  supporting: const Text('跟随系统'),
+                  headline: Text(l10n.appearance),
+                  supporting: Text(l10n.followSystem),
                   onTap: () {},
                 ),
               ],
