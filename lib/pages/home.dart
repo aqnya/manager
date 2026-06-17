@@ -396,7 +396,6 @@ class _DeviceInfoItem extends StatelessWidget {
             child: Icon(icon, color: scheme.onPrimaryContainer, size: 20),
           ),
           const SizedBox(width: 16),
-          Expanded(
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -417,7 +416,6 @@ class _DeviceInfoItem extends StatelessWidget {
                 ),
               ],
             ),
-          ),
         ],
       ),
     );
