@@ -42,10 +42,7 @@ class MyApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: const [
-            Locale('en', ''),
-            Locale('zh', ''),
-          ],
+          supportedLocales: const [Locale('en', ''), Locale('zh', '')],
           theme: ThemeData(useMaterial3: true, colorScheme: lightScheme),
           darkTheme: ThemeData(useMaterial3: true, colorScheme: darkScheme),
           themeMode: ThemeMode.system,
@@ -72,7 +69,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final List<Widget> _pages = [
       const HomePage(),
-      Center(child: Text(l10n.searchPageText, style: const TextStyle(fontSize: 24))),
+      Center(
+        child: Text(l10n.searchPageText, style: const TextStyle(fontSize: 24)),
+      ),
       const SettingsPage(),
     ];
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:nekosu/ffi.dart';
 
@@ -11,7 +12,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  final installStatus = NCore.isInstalled()
+    final installStatus = NCore.isInstalled()
         ? InstallStatus.installed
         : InstallStatus.notInstalled;
     return _HomeScreenContent(
@@ -35,7 +36,10 @@ class RebootListPopup extends StatelessWidget {
       itemBuilder: (context) => [
         PopupMenuItem(value: 'reboot', child: Text(l10n.reboot)),
         PopupMenuItem(value: 'recovery', child: Text(l10n.rebootToRecovery)),
-        PopupMenuItem(value: 'bootloader', child: Text(l10n.rebootToBootloader)),
+        PopupMenuItem(
+          value: 'bootloader',
+          child: Text(l10n.rebootToBootloader),
+        ),
       ],
     );
   }
@@ -121,8 +125,6 @@ class _HomeScreenContent extends StatelessWidget {
   }
 }
 
-// ── StatusCard ────────────────────────────────────────────────────────────────
-
 class _StatusCard extends StatelessWidget {
   const _StatusCard({required this.status, required this.onClick});
 
@@ -137,10 +139,12 @@ class _StatusCard extends StatelessWidget {
 
     final isInstalled = status == InstallStatus.installed;
 
-    final containerColor =
-        isInstalled ? scheme.secondaryContainer : scheme.errorContainer;
-    final contentColor =
-        isInstalled ? scheme.onSecondaryContainer : scheme.onErrorContainer;
+    final containerColor = isInstalled
+        ? scheme.secondaryContainer
+        : scheme.errorContainer;
+    final contentColor = isInstalled
+        ? scheme.onSecondaryContainer
+        : scheme.onErrorContainer;
 
     return Card(
       color: containerColor,
@@ -259,22 +263,45 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _DeviceInfoCard extends StatelessWidget {
+class _DeviceInfoCard extends StatefulWidget {
   const _DeviceInfoCard();
 
-  static String _kernelVersion() {
-    try {
-      return Platform.operatingSystemVersion;
-    } catch (_) {
-      return 'Linux';
-    }
+  @override
+  State<_DeviceInfoCard> createState() => _DeviceInfoCardState();
+}
+
+class _DeviceInfoCardState extends State<_DeviceInfoCard> {
+  String _model = '...';
+  String _androidVersion = '...';
+  String _kernelVersion = '...';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDeviceInfo();
   }
 
-  static String _androidVersion() {
+  Future<void> _loadDeviceInfo() async {
+    final deviceInfo = DeviceInfoPlugin();
     try {
-      return Platform.operatingSystem;
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfo.androidInfo;
+        if (mounted) {
+          setState(() {
+            _model = '${androidInfo.brand} ${androidInfo.model}';
+            _androidVersion = androidInfo.version.release;
+            _kernelVersion = Platform.operatingSystemVersion;
+          });
+        }
+      }
     } catch (_) {
-      return 'Android';
+      if (mounted) {
+        setState(() {
+          _model = 'Unknown';
+          _androidVersion = Platform.operatingSystem;
+          _kernelVersion = Platform.operatingSystemVersion;
+        });
+      }
     }
   }
 
@@ -284,9 +311,9 @@ class _DeviceInfoCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     final items = [
-      (Icons.memory, l10n.kernelVersion, _kernelVersion()),
-      (Icons.android, l10n.androidVersion, _androidVersion()),
-      (Icons.phone_android, l10n.deviceModel, 'Device'),
+      (Icons.memory, l10n.kernelVersion, _kernelVersion),
+      (Icons.android, l10n.androidVersion, _androidVersion),
+      (Icons.phone_android, l10n.deviceModel, _model),
       (Icons.settings, l10n.managerVersion, '1.0.0'),
     ];
 
@@ -393,55 +420,4 @@ class _DeviceInfoItem extends StatelessWidget {
       ),
     );
   }
-}
-
-// ── GlowCircle ────────────────────────────────────────────────────────────────
-
-class _GlowCircle extends StatelessWidget {
-  const _GlowCircle({
-    required this.size,
-    required this.color,
-    required this.child,
-  });
-
-  final double size;
-  final Color color;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _GlowPainter(color: color),
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.06),
-          shape: BoxShape.circle,
-        ),
-        child: Center(child: child),
-      ),
-    );
-  }
-}
-
-class _GlowPainter extends CustomPainter {
-  const _GlowPainter({required this.color});
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final r = size.shortestSide / 1.8;
-    final paint = Paint()
-      ..shader =
-          RadialGradient(
-            colors: [color.withValues(alpha: 0.25), Colors.transparent],
-          ).createShader(
-            Rect.fromCircle(center: size.center(Offset.zero), radius: r),
-          );
-    canvas.drawCircle(size.center(Offset.zero), r, paint);
-  }
-
-  @override
-  bool shouldRepaint(_GlowPainter old) => old.color != color;
 }
