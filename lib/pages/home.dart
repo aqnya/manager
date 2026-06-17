@@ -290,7 +290,7 @@ class _DeviceInfoCardState extends State<_DeviceInfoCard> {
           setState(() {
             _model = '${androidInfo.brand} ${androidInfo.model}';
             _androidVersion = androidInfo.version.release;
-            _kernelVersion = Platform.operatingSystemVersion;
+            _kernelVersion = androidInfo.version.kernelVersion;
           });
         }
       }
@@ -299,7 +299,7 @@ class _DeviceInfoCardState extends State<_DeviceInfoCard> {
         setState(() {
           _model = 'Unknown';
           _androidVersion = Platform.operatingSystem;
-          _kernelVersion = Platform.operatingSystemVersion;
+          _kernelVersion = androidInfo.version.kernelVersion;
         });
       }
     }
