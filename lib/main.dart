@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'l10n/app_localizations.dart';
+import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:nekosu/pages/home.dart';
 import 'package:nekosu/pages/settings.dart';
