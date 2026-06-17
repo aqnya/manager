@@ -7,14 +7,20 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: CardGroup(
-        children: [
-          ListRow(
-            icon: const Icon(Icons.dark_mode_outlined),
-            headline: const Text('外观'),
-            supporting: const Text('跟随系统'),
-            onTap: () {},
+      body: CustomScrollView(
+        slivers: [
+          const SliverAppBar.medium(title: Text('Settings')),
+          SliverToBoxAdapter(
+            child: CardGroup(
+              children: [
+                ListRow(
+                  icon: const Icon(Icons.palette_outlined),
+                  headline: const Text('外观'),
+                  supporting: const Text('跟随系统'),
+                  onTap: () {},
+                ),
+              ],
+            ),
           ),
         ],
       ),
