@@ -132,85 +132,105 @@ class _StatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final isDark = scheme.surface.computeLuminance() < 0.5;
+    final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
-    final containerColor = switch (status) {
-      InstallStatus.installed => scheme.primaryContainer,
-      InstallStatus.notInstalled =>
-        isDark ? scheme.errorContainer : scheme.error,
-    };
-    final contentColor = switch (status) {
-      InstallStatus.installed => scheme.onPrimaryContainer,
-      InstallStatus.notInstalled =>
-        isDark ? scheme.onErrorContainer : scheme.onError,
-    };
-    final icon = switch (status) {
-      InstallStatus.installed => Icons.check_circle,
-      InstallStatus.notInstalled => Icons.system_update,
-    };
-    final title = switch (status) {
-      InstallStatus.installed => l10n.installed,
-      InstallStatus.notInstalled => l10n.notInstalled,
-    };
-    final sub = switch (status) {
-      InstallStatus.installed => l10n.running,
-      InstallStatus.notInstalled => l10n.clickToInstall,
+    final (containerColor, contentColor, icon, title, sub) = switch (status) {
+      InstallStatus.installed => (
+          scheme.primaryContainer,
+          scheme.onPrimaryContainer,
+          Icons.check_circle_outline_rounded,
+          l10n.installed,
+          l10n.running,
+        ),
+      InstallStatus.notInstalled => (
+          scheme.errorContainer,
+          scheme.onErrorContainer,
+          Icons.system_update_rounded,
+          l10n.notInstalled,
+          l10n.clickToInstall,
+        ),
     };
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: Material(
-        color: containerColor.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(28),
-        child: InkWell(
-          onTap: onClick,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                _GlowCircle(
-                  size: 50,
-                  color: contentColor,
-                  child: Icon(icon, color: contentColor, size: 24),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              color: contentColor,
-                              fontWeight: FontWeight.w600,
-                            ),
+    return Card(
+      // Card.filled → FilledCard，使用 containerColor
+      color: containerColor,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16), // MD3 extraLarge = 28，large = 16
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onClick,
+        // Ink ripple 自动继承 containerColor 上的 stateLayer
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child: Row(
+            children: [
+              // MD3 建议用 Icon + 背景容器代替自定义 GlowCircle
+              _LeadingIcon(icon: icon, color: contentColor, containerColor: containerColor),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: textTheme.titleMedium?.copyWith(
+                        color: contentColor,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const SizedBox(height: 3),
-                      Text(
-                        sub,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: contentColor.withValues(alpha: 0.7),
-                        ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      sub,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: contentColor.withValues(alpha: 0.8),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                _GlowCircle(
-                  size: 30,
-                  color: contentColor,
-                  child: Icon(
-                    Icons.arrow_forward_ios,
-                    color: contentColor.withValues(alpha: 0.6),
-                    size: 13,
-                  ),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 8),
+              // MD3 trailing action: IconButton.filledTonal 或简单 Icon
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: contentColor.withValues(alpha: 0.7),
+                size: 16,
+              ),
+            ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// MD3 规范中 "Icon with container" 的标准写法
+class _LeadingIcon extends StatelessWidget {
+  const _LeadingIcon({
+    required this.icon,
+    required this.color,
+    required this.containerColor,
+  });
+
+  final IconData icon;
+  final Color color;
+  final Color containerColor;
+
+  @override
+  Widget build(BuildContext context) {
+    // MD3 建议 leading icon container 尺寸为 40×40，圆角 full（即 20）
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        // 使用 color 叠加低透明度作为 icon container，符合 MD3 tonal 层次
+        color: color.withValues(alpha: 0.12),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(icon, color: color, size: 22),
     );
   }
 }
