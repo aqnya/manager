@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
+import 'package:nekosu/ffi.dart';
 
 enum InstallStatus { installed, notInstalled }
 
@@ -10,7 +11,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  final installStatus = ncoreInstall()
+  final installStatus = NCore.isInstalled()
         ? InstallStatus.installed
         : InstallStatus.notInstalled;
     return const _HomeScreenContent(
