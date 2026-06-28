@@ -241,7 +241,7 @@ class _StatCard extends StatelessWidget {
                       value,
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(
-                            fontWeight: FontWeight.semiBold,
+                            fontWeight: FontWeight.bold,
                             color: scheme.onSurface,
                           ),
                     ),
