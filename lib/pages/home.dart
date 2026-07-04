@@ -74,7 +74,7 @@ class _HomeScreenContent extends StatelessWidget {
             title: Text(
               l10n.appTitle,
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                fontWeight: FontWeight.w300,
+                fontWeight: FontWeight.w400,
                 color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
