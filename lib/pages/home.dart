@@ -148,48 +148,79 @@ class _StatusCard extends StatelessWidget {
         ? scheme.onSecondaryContainer
         : scheme.onErrorContainer;
 
-    return Card(
-      color: containerColor,
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        color: containerColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: contentColor.withOpacity(0.08), width: 1),
+      ),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onClick,
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(
-                isInstalled
-                    ? Icons.check_circle_outline_rounded
-                    : Icons.warning_amber_rounded,
-                color: contentColor,
-                size: 28,
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      isInstalled ? l10n.installed : l10n.notInstalled,
-                      style: textTheme.titleMedium?.copyWith(
-                        color: contentColor,
-                      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onClick,
+          splashColor: contentColor.withOpacity(0.08),
+          highlightColor: contentColor.withOpacity(0.04),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: contentColor.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    transitionBuilder: (child, anim) => ScaleTransition(
+                      scale: anim,
+                      child: FadeTransition(opacity: anim, child: child),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      isInstalled ? l10n.running : l10n.clickToInstall,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: contentColor,
-                      ),
+                    child: Icon(
+                      isInstalled
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.warning_amber_rounded,
+                      key: ValueKey(isInstalled),
+                      color: contentColor,
+                      size: 24,
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        isInstalled ? l10n.installed : l10n.notInstalled,
+                        style: textTheme.titleMedium?.copyWith(
+                          color: contentColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        isInstalled ? l10n.running : l10n.clickToInstall,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: contentColor.withOpacity(0.75),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: contentColor.withOpacity(0.5),
+                  size: 22,
+                ),
+              ],
+            ),
           ),
         ),
       ),
