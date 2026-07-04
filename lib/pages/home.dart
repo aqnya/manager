@@ -70,18 +70,20 @@ class _HomeScreenContent extends StatelessWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar.medium(
+          SliverAppBar.large(
             title: Text(
               l10n.appTitle,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
             actions: const [RebootListPopup()],
             backgroundColor: Theme.of(context).colorScheme.surface,
             surfaceTintColor: Colors.transparent,
             scrolledUnderElevation: 0,
           ),
+
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
             sliver: SliverList(
@@ -396,26 +398,26 @@ class _DeviceInfoItem extends StatelessWidget {
             child: Icon(icon, color: scheme.onPrimaryContainer, size: 20),
           ),
           const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: scheme.onSurface.withValues(alpha: 0.55),
-                    fontWeight: FontWeight.w500,
-                  ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: scheme.onSurface.withValues(alpha: 0.55),
+                  fontWeight: FontWeight.w500,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: scheme.onSurface,
-                    fontWeight: FontWeight.w400,
-                  ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurface,
+                  fontWeight: FontWeight.w400,
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
         ],
       ),
     );
