@@ -70,11 +70,11 @@ class _HomeScreenContent extends StatelessWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar.large(
+          SliverAppBar.medium(
             title: Text(
               l10n.appTitle,
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w300,
                 color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
