@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DynamicColorBuilder(
-      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+      builder: (lightDynamic, darkDynamic) {
         final lightScheme = ColorScheme.fromSeed(
           seedColor: lightDynamic?.primary ?? _fallbackSeed,
           brightness: Brightness.light,
