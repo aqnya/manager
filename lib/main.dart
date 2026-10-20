@@ -14,6 +14,7 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   static const _fallbackSeed = Colors.teal;
+  static const _systemFontFamily = 'sans-serif';
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +40,16 @@ class MyApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: const [Locale('en', ''), Locale('zh', '')],
-          theme: ThemeData(useMaterial3: true, colorScheme: lightScheme),
-          darkTheme: ThemeData(useMaterial3: true, colorScheme: darkScheme),
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: lightScheme,
+            fontFamily: _systemFontFamily,
+          ),
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            colorScheme: darkScheme,
+            fontFamily: _systemFontFamily,
+          ),
           themeMode: ThemeMode.system,
           home: const MyHomePage(),
         );
