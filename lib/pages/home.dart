@@ -40,16 +40,16 @@ class _HomeScreenContent extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: scheme.surfaceContainer,
+      appBar: AppBar(
+        title: Text(l10n.appTitle),
+        backgroundColor: scheme.surfaceContainer,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+      ),
       body: CustomScrollView(
         slivers: [
-          SliverAppBar.medium(
-            title: Text(l10n.appTitle),
-            backgroundColor: scheme.surfaceContainer,
-            surfaceTintColor: Colors.transparent,
-            scrolledUnderElevation: 0,
-          ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -241,8 +241,9 @@ class _DeviceInfoListState extends State<_DeviceInfoList> {
   }
 
   Future<void> _loadDeviceInfo() async {
+    final kernelVersion = await _loadKernelVersion();
     if (!Platform.isAndroid) {
-      _setFallback();
+      _setFallback(kernelVersion);
       return;
     }
 
@@ -250,31 +251,36 @@ class _DeviceInfoListState extends State<_DeviceInfoList> {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
       if (!mounted) return;
       setState(() {
-        _kernelVersion = _parseKernelVersion(Platform.operatingSystemVersion);
+        _kernelVersion = kernelVersion;
         _androidVersion = androidInfo.version.release;
         _model = '${androidInfo.manufacturer} ${androidInfo.model}';
         _fingerprint = androidInfo.fingerprint;
       });
     } catch (_) {
-      _setFallback();
+      _setFallback(kernelVersion);
     }
   }
 
-  void _setFallback() {
+  Future<String> _loadKernelVersion() async {
+    if (!Platform.isAndroid) return Platform.operatingSystem;
+    try {
+      final result = await Process.run('/system/bin/uname', const ['-r']);
+      if (result.exitCode == 0) {
+        final version = result.stdout.toString().trim();
+        if (version.isNotEmpty) return version;
+      }
+    } catch (_) {}
+    return 'Unknown';
+  }
+
+  void _setFallback(String kernelVersion) {
     if (!mounted) return;
     setState(() {
-      _kernelVersion = _parseKernelVersion(Platform.operatingSystemVersion);
+      _kernelVersion = kernelVersion;
       _androidVersion = Platform.operatingSystem;
       _model = 'Unknown';
       _fingerprint = 'Unknown';
     });
-  }
-
-  String _parseKernelVersion(String value) {
-    final match = RegExp(r'(?:Linux version\s+)?(\S+)')
-        .firstMatch(value.trim());
-    final version = match?.group(1);
-    return version == null || version.isEmpty ? 'Unknown' : version;
   }
 
   @override
@@ -314,6 +320,7 @@ class _SegmentedList extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (int index = 0; index < entries.length; index++) ...[
           if (index > 0) const SizedBox(height: 2),
