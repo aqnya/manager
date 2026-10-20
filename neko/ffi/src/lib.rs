@@ -4,13 +4,25 @@ use std::ffi::CStr;
 use std::fs;
 use std::os::fd::RawFd;
 use std::ptr;
+use std::slice;
 use std::sync::Once;
 use std::sync::atomic::{AtomicI32, Ordering};
 
 const FMAC_MAX_DATA: usize = 64 * 1024;
 const FMAC_STACK_DATA: usize = 264;
 
+const FMAC_DATA_PROFILE: usize = 84;
+const FMAC_OFF_UID: usize = 0;
+const FMAC_OFF_CAPS: usize = 4;
+const FMAC_OFF_DOMAIN: usize = 12;
+const FMAC_OFF_NS: usize = 76;
+const FMAC_OFF_ROOT_UID: usize = 80;
+
 const IOC_CMD: libc::c_int = 0xC008_4600u32 as libc::c_int;
+const IOC_DEL_UID: u32 = 4;
+const IOC_HAS_UID: u32 = 5;
+const IOC_SET_PROFILE: u32 = 10;
+const IOC_GET_PROFILES: u32 = 13;
 const IOC_GET_VERSION: u32 = 14;
 
 const PR_GET_SHM_FD: libc::c_int = 201;
@@ -184,6 +196,45 @@ fn copy_string(value: Option<String>, buffer: *mut u8, capacity: usize) -> isize
     bytes.len() as isize
 }
 
+fn set_profile_impl(uid: i32, root_uid: i32, caps: u64, domain: &[u8], namespace: i32) -> i32 {
+    if uid < 0 || root_uid < 0 || namespace <= 0 {
+        return -1;
+    }
+    let Some(fd) = ensure_ctl_fd() else {
+        return -1;
+    };
+
+    let mut data = [0u8; FMAC_DATA_PROFILE];
+    data[FMAC_OFF_UID..FMAC_OFF_UID + 4].copy_from_slice(&(uid as u32).to_ne_bytes());
+    data[FMAC_OFF_CAPS..FMAC_OFF_CAPS + 8].copy_from_slice(&caps.to_ne_bytes());
+    let len = domain.len().min(FMAC_OFF_NS - FMAC_OFF_DOMAIN - 1);
+    data[FMAC_OFF_DOMAIN..FMAC_OFF_DOMAIN + len].copy_from_slice(&domain[..len]);
+    data[FMAC_OFF_NS..FMAC_OFF_NS + 4].copy_from_slice(&namespace.to_ne_bytes());
+    data[FMAC_OFF_ROOT_UID..FMAC_OFF_ROOT_UID + 4]
+        .copy_from_slice(&(root_uid as u32).to_ne_bytes());
+
+    if ioc_call(fd, IOC_SET_PROFILE, &mut data) < 0 {
+        -1
+    } else {
+        0
+    }
+}
+
+fn uid_ioctl(uid: i32, flag: u32) -> i32 {
+    if uid < 0 {
+        return -1;
+    }
+    let Some(fd) = ensure_ctl_fd() else {
+        return -1;
+    };
+    let mut data = (uid as u32).to_ne_bytes();
+    if ioc_call(fd, flag, &mut data) < 0 {
+        -1
+    } else {
+        0
+    }
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn ncore_init() -> i32 {
     init_logging();
@@ -224,4 +275,68 @@ pub extern "C" fn ncore_kernel_release(buffer: *mut u8, capacity: usize) -> isiz
 pub extern "C" fn ncore_module_version(buffer: *mut u8, capacity: usize) -> isize {
     init_logging();
     copy_string(module_version(), buffer, capacity)
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn ncore_set_profile(
+    uid: i32,
+    root_uid: i32,
+    caps: u64,
+    domain: *const u8,
+    domain_len: usize,
+    namespace: i32,
+) -> i32 {
+    init_logging();
+    if domain_len > 4096 || (domain.is_null() && domain_len != 0) {
+        return -1;
+    }
+    let domain = if domain_len == 0 {
+        &[]
+    } else {
+        unsafe { slice::from_raw_parts(domain, domain_len) }
+    };
+    set_profile_impl(uid, root_uid, caps, domain, namespace)
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn ncore_del_uid(uid: i32) -> i32 {
+    init_logging();
+    uid_ioctl(uid, IOC_DEL_UID)
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn ncore_has_uid(uid: i32) -> i32 {
+    init_logging();
+    if uid < 0 {
+        return -1;
+    }
+    let Some(fd) = ensure_ctl_fd() else {
+        return -1;
+    };
+    let mut data = (uid as u32).to_ne_bytes();
+    if ioc_call(fd, IOC_HAS_UID, &mut data) < 0 {
+        return -1;
+    }
+    if u32::from_ne_bytes(data) != 0 { 1 } else { 0 }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn ncore_list_profiles(buffer: *mut u8, capacity: usize) -> isize {
+    init_logging();
+    let Some(fd) = ensure_ctl_fd() else {
+        return -1;
+    };
+    let mut data = vec![0u8; FMAC_MAX_DATA];
+    if ioc_call(fd, IOC_GET_PROFILES, &mut data) < 0 {
+        return -1;
+    }
+    let end = data
+        .iter()
+        .position(|byte| *byte == 0)
+        .unwrap_or(data.len());
+    copy_string(
+        Some(String::from_utf8_lossy(&data[..end]).into_owned()),
+        buffer,
+        capacity,
+    )
 }

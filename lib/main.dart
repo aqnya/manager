@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:nekosu/pages/app_list.dart';
 import 'package:nekosu/pages/home.dart';
 import 'package:nekosu/pages/settings.dart';
 import 'package:nekosu/navbar.dart';
@@ -74,9 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final List<Widget> _pages = [
       const HomePage(),
-      Center(
-        child: Text(l10n.searchPageText, style: const TextStyle(fontSize: 24)),
-      ),
+      const AppListPage(),
       const SettingsPage(),
     ];
 
@@ -96,9 +95,9 @@ class _MyHomePageState extends State<MyHomePage> {
             activeIcon: const Icon(Icons.home),
           ),
           NavBarTab(
-            label: l10n.searchLabel,
-            icon: const Icon(Icons.search_outlined),
-            activeIcon: const Icon(Icons.search),
+            label: l10n.appsLabel,
+            icon: const Icon(Icons.apps_outlined),
+            activeIcon: const Icon(Icons.apps_rounded),
           ),
           NavBarTab(
             label: l10n.settingsLabel,

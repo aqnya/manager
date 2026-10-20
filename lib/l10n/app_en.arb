@@ -106,5 +106,116 @@
   "colorSchemeDiagnostics": "Color Scheme Diagnostics",
   "@colorSchemeDiagnostics": {
     "description": "Title for the color scheme diagnostic page"
-  }
+  },
+  "appsLabel": "Apps",
+  "@appsLabel": {
+    "description": "Label for the Apps tab"
+  },
+  "filterApps": "Filter apps",
+  "filterAllApps": "All apps",
+  "filterLaunchableApps": "Launchable apps",
+  "filterSystemApps": "System apps",
+  "filterUserApps": "User apps",
+  "searchAppsHint": "Search apps",
+  "loadingApps": "Loading apps",
+  "noApps": "No apps",
+  "noMatchingApps": "No apps match \"{query}\"",
+  "@noMatchingApps": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "loadAppsFailed": "Failed to load apps",
+  "retry": "Retry",
+  "tagAllowed": "allowed",
+  "tagSystem": "system",
+  "appProfileTitle": "App Authorization",
+  "accessPermissions": "Access",
+  "allowRootAccess": "Allow Root Access",
+  "allowRootAccessSummary": "Run this app with the configured identity and capabilities",
+  "rootConfiguration": "Root Configuration",
+  "rootUid": "Root UID",
+  "rootUidInput": "Process UID",
+  "rootUidDescription": "UID used after elevation (0 = real root)",
+  "capabilities": "Capabilities",
+  "capabilitiesSelected": "{selected} / {total} selected",
+  "@capabilitiesSelected": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "capsSearchHint": "Search capabilities",
+  "selinuxDomain": "SELinux Domain",
+  "selinuxDomainInput": "Domain context",
+  "selinuxDomainDescription": "SELinux context used by elevated processes",
+  "mountNamespace": "Mount Namespace",
+  "namespaceInheritedLabel": "Inherited",
+  "namespaceInheritedDescription": "Use the caller's mount namespace",
+  "namespaceIndividualLabel": "Individual",
+  "namespaceIndividualDescription": "Create an individual mount namespace for this UID",
+  "namespaceGlobalLabel": "Global",
+  "namespaceGlobalDescription": "Join the global shared namespace",
+  "dialogSelectAll": "Select all",
+  "dialogDefault": "Default",
+  "dialogClear": "Clear",
+  "dialogConfirm": "Confirm",
+  "dialogCancel": "Cancel",
+  "dialogDone": "Done",
+  "profileSaveFailed": "Failed to update the app profile",
+  "uidLabel": "UID {uid}",
+  "@uidLabel": {
+    "placeholders": {
+      "uid": {
+        "type": "int"
+      }
+    }
+  },
+  "capDescChown": "Change file UID/GID arbitrarily",
+  "capDescDacOverride": "Bypass file read/write/execute permission checks",
+  "capDescDacReadSearch": "Bypass file read/directory search permission checks",
+  "capDescFowner": "Bypass operations requiring file owner checks",
+  "capDescFsetid": "Preserve setuid/setgid bits after file modification",
+  "capDescKill": "Send signals to any process",
+  "capDescSetgid": "Change process GID arbitrarily",
+  "capDescSetuid": "Change process UID arbitrarily",
+  "capDescSetpcap": "Modify process capability sets",
+  "capDescLinuxImmutable": "Modify immutable (i) and append-only (a) file attributes",
+  "capDescNetBindService": "Bind privileged ports below 1024",
+  "capDescNetBroadcast": "Network broadcast and multicast access",
+  "capDescNetAdmin": "Network configuration (interfaces/routing/firewall)",
+  "capDescNetRaw": "Use raw/datagram sockets (ping/tcpdump)",
+  "capDescIpcLock": "Lock shared memory segments",
+  "capDescIpcOwner": "Bypass IPC ownership checks",
+  "capDescSysModule": "Load/unload kernel modules",
+  "capDescSysRawio": "Access /dev/mem, ioperm and other low-level I/O",
+  "capDescSysChroot": "Call chroot()",
+  "capDescSysPtrace": "ptrace/debug any process",
+  "capDescSysPacct": "Configure process accounting",
+  "capDescSysAdmin": "Universal admin (mount/namespace/hostname etc.)",
+  "capDescSysBoot": "Call reboot() and load a new kernel",
+  "capDescSysNice": "Raise process priority/set scheduling policy",
+  "capDescSysResource": "Configure system resource limits (disk quota/reserved space)",
+  "capDescSysTime": "Modify system clock/real-time clock",
+  "capDescSysTtyConfig": "Configure TTY devices",
+  "capDescMknod": "Create special files via mknod()",
+  "capDescLease": "Establish leases on files",
+  "capDescAuditWrite": "Write to the kernel audit log",
+  "capDescAuditControl": "Configure the kernel audit subsystem",
+  "capDescSetfcap": "Set file capabilities",
+  "capDescMacOverride": "Bypass Mandatory Access Control (LSM/SELinux)",
+  "capDescMacAdmin": "Configure/modify policy (LSM/SELinux)",
+  "capDescSyslog": "Privileged syslog operations/read /proc/kmsg",
+  "capDescWakeAlarm": "Set wake-up alarms",
+  "capDescBlockSuspend": "Prevent the system from entering suspend",
+  "capDescAuditRead": "Read the audit log stream",
+  "capDescPerfmon": "Perform performance monitoring",
+  "capDescBpf": "Load and manage BPF programs",
+  "capDescCheckpointRestore": "Perform checkpoint and restore operations"
 }
