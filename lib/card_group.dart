@@ -33,9 +33,8 @@ class ListRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final subStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final subStyle = Theme.of(context).textTheme.bodyMedium
+        ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant);
 
     return InkWell(
       // 包一层
@@ -104,7 +103,7 @@ class CardItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.surfaceContainer;
+    final color = Theme.of(context).colorScheme.surfaceBright;
     return ClipRRect(
       borderRadius: groupShape(index, total),
       child: ColoredBox(

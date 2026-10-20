@@ -20,6 +20,7 @@ import kotlin.math.roundToInt
 class MainActivity : FlutterActivity() {
     private companion object {
         const val CHANNEL = "nekosu/apps"
+        const val SETTINGS_CHANNEL = "nekosu/settings"
         const val MAX_ICON_SIZE = 160
         const val MIUI_APPS_PERMISSION = "com.android.permission.GET_INSTALLED_APPS"
         const val MIUI_SECURITY_PACKAGE = "com.lbe.security.miui"
@@ -28,6 +29,7 @@ class MainActivity : FlutterActivity() {
 
     private val executor = Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
+    private var moduleBridge: ModuleBridge? = null
     private val iconCache =
         object : LruCache<String, ByteArray>(8 * 1024 * 1024) {
             override fun sizeOf(
@@ -38,6 +40,8 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        moduleBridge = ModuleBridge(this, flutterEngine.dartExecutor.binaryMessenger).also { it.register() }
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
@@ -54,12 +58,61 @@ class MainActivity : FlutterActivity() {
             }
         }
 
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SETTINGS_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "load" -> {
+                    val prefs = getSharedPreferences("app_preferences", MODE_PRIVATE)
+                    result.success(
+                        mapOf(
+                            "themeMode" to prefs.getInt("theme_mode", 0),
+                            "themeColor" to prefs.getInt("theme_color", 0),
+                            "amoled" to prefs.getBoolean("amoled_mode", false),
+                            "language" to prefs.getString("language", "system"),
+                        ),
+                    )
+                }
+                "save" -> {
+                    val key = call.argument<String>("key")
+                    val value = call.argument<Any>("value")
+                    if (key == null) {
+                        result.error("invalid_argument", "key is required", null)
+                    } else {
+                        val editor = getSharedPreferences("app_preferences", MODE_PRIVATE).edit()
+                        when (value) {
+                            is Boolean -> editor.putBoolean(key, value)
+                            is Int -> editor.putInt(key, value)
+                            is Long -> editor.putLong(key, value)
+                            is String -> editor.putString(key, value)
+                            else -> {
+                                result.error("invalid_argument", "unsupported setting value", null)
+                                return@setMethodCallHandler
+                            }
+                        }
+                        editor.apply()
+                        result.success(null)
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
+
         mainHandler.postDelayed({ requestMiuiAppListPermission() }, 300)
     }
 
     override fun onDestroy() {
+        moduleBridge?.dispose()
+        moduleBridge = null
         executor.shutdownNow()
         super.onDestroy()
+    }
+
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
+        if (moduleBridge?.onActivityResult(requestCode, resultCode, data) == true) return
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     private fun <T> runAsync(

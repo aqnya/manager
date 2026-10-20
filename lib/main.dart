@@ -4,31 +4,68 @@ import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:nekosu/pages/app_list.dart';
 import 'package:nekosu/pages/home.dart';
+import 'package:nekosu/pages/modules.dart';
 import 'package:nekosu/pages/settings.dart';
 import 'package:nekosu/navbar.dart';
+import 'package:nekosu/settings_controller.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SettingsController.instance.load();
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  static const _fallbackSeed = Colors.teal;
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   static const _systemFontFamily = 'sans-serif';
 
   @override
+  void initState() {
+    super.initState();
+    SettingsController.instance.addListener(_settingsChanged);
+  }
+
+  @override
+  void dispose() {
+    SettingsController.instance.removeListener(_settingsChanged);
+    super.dispose();
+  }
+
+  void _settingsChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final settings = SettingsController.instance;
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) {
+        final lightSeed = settings.usesDynamicColor
+            ? lightDynamic?.primary ?? SettingsController.fallbackSeed
+            : settings.seedColor;
+        final darkSeed = settings.usesDynamicColor
+            ? darkDynamic?.primary ?? SettingsController.fallbackSeed
+            : settings.seedColor;
         final lightScheme = ColorScheme.fromSeed(
-          seedColor: lightDynamic?.primary ?? _fallbackSeed,
+          seedColor: lightSeed,
           brightness: Brightness.light,
         );
-        final darkScheme = ColorScheme.fromSeed(
-          seedColor: darkDynamic?.primary ?? _fallbackSeed,
+        final darkBase = ColorScheme.fromSeed(
+          seedColor: darkSeed,
           brightness: Brightness.dark,
         );
+        final darkScheme = settings.amoled
+            ? darkBase.copyWith(
+                surface: Colors.black,
+                surfaceContainer: Colors.black,
+              )
+            : darkBase;
 
         return MaterialApp(
           onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
@@ -39,6 +76,7 @@ class MyApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: const [Locale('en', ''), Locale('zh', '')],
+          locale: settings.locale,
           theme: ThemeData(
             useMaterial3: true,
             colorScheme: lightScheme,
@@ -51,7 +89,7 @@ class MyApp extends StatelessWidget {
             fontFamily: _systemFontFamily,
             scaffoldBackgroundColor: darkScheme.surfaceContainer,
           ),
-          themeMode: ThemeMode.system,
+          themeMode: settings.flutterThemeMode,
           home: const MyHomePage(),
         );
       },
@@ -76,6 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final List<Widget> _pages = [
       const HomePage(),
       const AppListPage(),
+      const ModulesPage(),
       const SettingsPage(),
     ];
 
@@ -99,6 +138,11 @@ class _MyHomePageState extends State<MyHomePage> {
             label: l10n.appsLabel,
             icon: const Icon(Icons.apps_outlined),
             activeIcon: const Icon(Icons.apps_rounded),
+          ),
+          NavBarTab(
+            label: l10n.modulesLabel,
+            icon: const Icon(Icons.extension_outlined),
+            activeIcon: const Icon(Icons.extension_rounded),
           ),
           NavBarTab(
             label: l10n.settingsLabel,

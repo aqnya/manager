@@ -28,6 +28,32 @@ typedef _ProfileDart = int Function(
 );
 typedef _UidNative = Int32 Function(Int32 uid);
 typedef _UidDart = int Function(int uid);
+typedef _StringArgNative = IntPtr Function(
+  Pointer<Uint8> value,
+  Size valueLength,
+  Pointer<Uint8> buffer,
+  Size capacity,
+);
+typedef _StringArgDart = int Function(
+  Pointer<Uint8> value,
+  int valueLength,
+  Pointer<Uint8> buffer,
+  int capacity,
+);
+typedef _ModuleControlNative = IntPtr Function(
+  Pointer<Uint8> id,
+  Size idLength,
+  Int32 operation,
+  Pointer<Uint8> buffer,
+  Size capacity,
+);
+typedef _ModuleControlDart = int Function(
+  Pointer<Uint8> id,
+  int idLength,
+  int operation,
+  Pointer<Uint8> buffer,
+  int capacity,
+);
 
 class NcoreFfi {
   NcoreFfi._();
@@ -51,6 +77,19 @@ class NcoreFfi {
   static final _StringDart? _listProfiles = _lookupString(
     'ncore_list_profiles',
   );
+  static final _StringDart? _moduleList = _lookupString('ncore_module_list');
+  static final _StringArgDart? _moduleInstall = _lookupStringArg(
+    'ncore_module_install',
+  );
+  static final _StringArgDart? _moduleAction = _lookupStringArg(
+    'ncore_module_action',
+  );
+  static final _ModuleControlDart? _moduleControl = _lookupModuleControl(
+    'ncore_module_control',
+  );
+  static final _StringArgDart? _moduleWebUi = _lookupStringArg(
+    'ncore_module_webui',
+  );
 
   static final bool available = _ctl != null && _isGki != null;
   static final bool profileApiAvailable =
@@ -58,6 +97,12 @@ class NcoreFfi {
       _deleteProfile != null &&
       _hasProfile != null &&
       _listProfiles != null;
+  static final bool moduleApiAvailable =
+      _moduleList != null &&
+      _moduleInstall != null &&
+      _moduleAction != null &&
+      _moduleControl != null &&
+      _moduleWebUi != null;
 
   static bool _initialized = false;
 
@@ -120,6 +165,28 @@ class NcoreFfi {
     }
   }
 
+  static _StringArgDart? _lookupStringArg(String name) {
+    final library = _library;
+    if (library == null) return null;
+    try {
+      return library.lookupFunction<_StringArgNative, _StringArgDart>(name);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static _ModuleControlDart? _lookupModuleControl(String name) {
+    final library = _library;
+    if (library == null) return null;
+    try {
+      return library.lookupFunction<_ModuleControlNative, _ModuleControlDart>(
+        name,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
   static void _ensureInitialized() {
     if (_initialized) return;
     _initialized = true;
@@ -145,6 +212,34 @@ class NcoreFfi {
   static String? get moduleVersion => _readString(_moduleVersion);
 
   static String? get profiles => _readString(_listProfiles);
+
+  static String? moduleList() => _readModuleString(_moduleList);
+
+  static String? moduleInstall(String zipPath) =>
+      _readModuleStringArg(_moduleInstall, zipPath, retry: false);
+
+  static String? moduleAction(String id) =>
+      _readModuleStringArg(_moduleAction, id, retry: false);
+
+  static String? moduleControl(String id, int operation) {
+    final function = _moduleControl;
+    if (function == null) return null;
+    final bytes = utf8.encode(id);
+    final value = calloc<Uint8>(bytes.isEmpty ? 1 : bytes.length);
+    try {
+      if (bytes.isNotEmpty) value.asTypedList(bytes.length).setAll(0, bytes);
+      return _readModuleString(
+        (buffer, capacity) =>
+            function(value, bytes.length, operation, buffer, capacity),
+        retry: false,
+      );
+    } finally {
+      calloc.free(value);
+    }
+  }
+
+  static String? moduleWebUi(String id) =>
+      _readModuleStringArg(_moduleWebUi, id, retry: false);
 
   static bool setProfile({
     required int uid,
@@ -204,5 +299,69 @@ class NcoreFfi {
       }
     }
     return null;
+  }
+
+  static String? _readModuleStringArg(
+    _StringArgDart? function,
+    String value, {
+    bool retry = true,
+  }) {
+    if (function == null) return null;
+    final bytes = utf8.encode(value);
+    final argument = calloc<Uint8>(bytes.isEmpty ? 1 : bytes.length);
+    try {
+      if (bytes.isNotEmpty) {
+        argument.asTypedList(bytes.length).setAll(0, bytes);
+      }
+      return _readModuleString(
+        (buffer, capacity) =>
+            function(argument, bytes.length, buffer, capacity),
+        retry: retry,
+      );
+    } finally {
+      calloc.free(argument);
+    }
+  }
+
+  static String? _readModuleString(
+    int Function(Pointer<Uint8>, int) call, {
+    bool retry = true,
+  }) {
+    if (!retry) {
+      return _readModuleStringOnce(call);
+    }
+    var capacity = 4096;
+    for (var attempt = 0; attempt < 4; attempt++) {
+      final buffer = calloc<Uint8>(capacity);
+      try {
+        final length = call(buffer, capacity);
+        if (length < 0) return null;
+        if (length < capacity) {
+          return buffer.cast<Utf8>().toDartString(length: length);
+        }
+        if (length > 4 * 1024 * 1024) return null;
+        capacity = length + 1;
+      } finally {
+        calloc.free(buffer);
+      }
+    }
+    return null;
+  }
+
+  /// Runs [call] exactly once. Module install/action/control commands have
+  /// side effects, so growing the output buffer must not invoke them again.
+  static String? _readModuleStringOnce(int Function(Pointer<Uint8>, int) call) {
+    const capacity = 4 * 1024 * 1024;
+    final buffer = calloc<Uint8>(capacity);
+    try {
+      final length = call(buffer, capacity);
+      if (length < 0) return null;
+      if (length >= capacity) {
+        return '-1\nModule output exceeded the 4 MiB limit';
+      }
+      return buffer.cast<Utf8>().toDartString(length: length);
+    } finally {
+      calloc.free(buffer);
+    }
   }
 }

@@ -3,6 +3,8 @@
 use std::ffi::CStr;
 use std::fs;
 use std::os::fd::RawFd;
+use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::ptr;
 use std::slice;
 use std::sync::Once;
@@ -336,6 +338,282 @@ pub extern "C" fn ncore_list_profiles(buffer: *mut u8, capacity: usize) -> isize
         .unwrap_or(data.len());
     copy_string(
         Some(String::from_utf8_lossy(&data[..end]).into_owned()),
+        buffer,
+        capacity,
+    )
+}
+
+const MODULE_ARGUMENT_LIMIT: usize = 8192;
+
+fn shell_quote(value: &str) -> String {
+    format!("'{}'", value.replace('\'', "'\\''"))
+}
+
+fn valid_module_id(id: &str) -> bool {
+    !id.is_empty()
+        && id.len() <= 128
+        && !id.contains("..")
+        && id
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'-' | b'_'))
+}
+
+fn native_library_dir() -> Option<PathBuf> {
+    let maps = fs::read_to_string("/proc/self/maps").ok()?;
+    maps.lines().find_map(|line| {
+        let path = line.split_whitespace().last()?;
+        let path = path.strip_suffix(" (deleted)").unwrap_or(path);
+        path.ends_with("/libncore_ffi.so")
+            .then(|| Path::new(path).parent().map(Path::to_path_buf))
+            .flatten()
+    })
+}
+
+fn ncore_path() -> Option<PathBuf> {
+    if let Some(directory) = native_library_dir() {
+        let candidate = directory.join("libncore.so");
+        if candidate.is_file() {
+            return Some(candidate);
+        }
+    }
+    ["/data/adb/ncore", "/data/adb/nksu/bin/ncore"]
+        .into_iter()
+        .map(PathBuf::from)
+        .find(|path| path.is_file())
+}
+
+fn root_command(command: &str) -> (i32, String) {
+    let su = if Path::new("/system/bin/su").is_file() {
+        "/system/bin/su"
+    } else {
+        "su"
+    };
+    let command =
+        format!("PATH=/sbin:/system/sbin:/system/bin:/system/xbin; export PATH; {command}");
+    match Command::new(su).args(["-c", command.as_str()]).output() {
+        Ok(result) => {
+            let mut output = String::from_utf8_lossy(&result.stdout).into_owned();
+            let stderr = String::from_utf8_lossy(&result.stderr);
+            if !stderr.is_empty() {
+                if !output.is_empty() && !output.ends_with('\n') {
+                    output.push('\n');
+                }
+                output.push_str(&stderr);
+            }
+            (result.status.code().unwrap_or(-1), output)
+        }
+        Err(error) => (-1, format!("root shell unavailable: {error}")),
+    }
+}
+
+fn module_ncore_command(arguments: &str) -> Result<String, String> {
+    let ncore = ncore_path().ok_or_else(|| "ncore runtime not found".to_owned())?;
+    Ok(format!(
+        "{} module {arguments}",
+        shell_quote(&ncore.to_string_lossy())
+    ))
+}
+
+fn module_result(code: i32, output: String) -> String {
+    format!("{code}\n{output}")
+}
+
+fn copy_module_result(value: String, buffer: *mut u8, capacity: usize) -> isize {
+    copy_string(Some(value), buffer, capacity)
+}
+
+fn required_argument(pointer: *const u8, length: usize) -> Option<String> {
+    if pointer.is_null() || length == 0 || length > MODULE_ARGUMENT_LIMIT {
+        return None;
+    }
+    let bytes = unsafe { slice::from_raw_parts(pointer, length) };
+    std::str::from_utf8(bytes).ok().map(str::to_owned)
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn ncore_module_list(buffer: *mut u8, capacity: usize) -> isize {
+    init_logging();
+    let result = match module_ncore_command("list --json") {
+        Ok(command) => root_command(&command),
+        Err(error) => (-1, error),
+    };
+    copy_module_result(module_result(result.0, result.1), buffer, capacity)
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn ncore_module_install(
+    zip: *const u8,
+    zip_length: usize,
+    buffer: *mut u8,
+    capacity: usize,
+) -> isize {
+    init_logging();
+    let Some(zip) = required_argument(zip, zip_length) else {
+        return copy_module_result(
+            module_result(-1, "Invalid module ZIP path".to_owned()),
+            buffer,
+            capacity,
+        );
+    };
+    if !Path::new(&zip).is_file() {
+        return copy_module_result(
+            module_result(-1, format!("Module ZIP not found: {zip}")),
+            buffer,
+            capacity,
+        );
+    }
+    let result = match module_ncore_command(&format!("install {}", shell_quote(&zip))) {
+        Ok(command) => root_command(&command),
+        Err(error) => (-1, error),
+    };
+    copy_module_result(module_result(result.0, result.1), buffer, capacity)
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn ncore_module_action(
+    id: *const u8,
+    id_length: usize,
+    buffer: *mut u8,
+    capacity: usize,
+) -> isize {
+    init_logging();
+    let Some(id) = required_argument(id, id_length) else {
+        return copy_module_result(
+            module_result(-1, "Invalid module id".to_owned()),
+            buffer,
+            capacity,
+        );
+    };
+    if !valid_module_id(&id) {
+        return copy_module_result(
+            module_result(-1, "Invalid module id".to_owned()),
+            buffer,
+            capacity,
+        );
+    }
+    let result = match module_ncore_command(&format!("action {}", shell_quote(&id))) {
+        Ok(command) => root_command(&command),
+        Err(error) => (-1, error),
+    };
+    copy_module_result(module_result(result.0, result.1), buffer, capacity)
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn ncore_module_control(
+    id: *const u8,
+    id_length: usize,
+    operation: i32,
+    buffer: *mut u8,
+    capacity: usize,
+) -> isize {
+    init_logging();
+    let Some(id) = required_argument(id, id_length) else {
+        return copy_module_result(
+            module_result(-1, "Invalid module id".to_owned()),
+            buffer,
+            capacity,
+        );
+    };
+    if !valid_module_id(&id) {
+        return copy_module_result(
+            module_result(-1, "Invalid module id".to_owned()),
+            buffer,
+            capacity,
+        );
+    }
+
+    let module_path = format!("/data/adb/modules/{id}");
+    let command = match operation {
+        0 => module_ncore_command(&format!("enable {}", shell_quote(&id))),
+        1 => module_ncore_command(&format!("disable {}", shell_quote(&id))),
+        2 => Ok(format!("touch {}/remove", shell_quote(&module_path))),
+        3 => Ok(format!("rm -f {}/remove", shell_quote(&module_path))),
+        4 => Ok(format!("rm -rf {}", shell_quote(&module_path))),
+        _ => {
+            return copy_module_result(
+                module_result(-1, "Invalid module operation".to_owned()),
+                buffer,
+                capacity,
+            );
+        }
+    };
+    let result = match command {
+        Ok(command) => root_command(&command),
+        Err(error) => (-1, error),
+    };
+    copy_module_result(module_result(result.0, result.1), buffer, capacity)
+}
+
+fn app_cache_dir() -> Option<PathBuf> {
+    let command_line = fs::read_to_string("/proc/self/cmdline").ok()?;
+    let package = command_line.split('\0').next()?.trim();
+    if package.is_empty() {
+        return None;
+    }
+    let current_user = PathBuf::from("/data/user/0").join(package).join("cache");
+    if current_user.is_dir() {
+        return Some(current_user);
+    }
+    let legacy = PathBuf::from("/data/data").join(package).join("cache");
+    legacy.is_dir().then_some(legacy)
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn ncore_module_webui(
+    id: *const u8,
+    id_length: usize,
+    buffer: *mut u8,
+    capacity: usize,
+) -> isize {
+    init_logging();
+    let Some(id) = required_argument(id, id_length) else {
+        return copy_module_result(
+            module_result(-1, "Invalid module id".to_owned()),
+            buffer,
+            capacity,
+        );
+    };
+    if !valid_module_id(&id) {
+        return copy_module_result(
+            module_result(-1, "Invalid module id".to_owned()),
+            buffer,
+            capacity,
+        );
+    }
+    let Some(cache) = app_cache_dir() else {
+        return copy_module_result(
+            module_result(-1, "App cache directory not found".to_owned()),
+            buffer,
+            capacity,
+        );
+    };
+
+    let destination = cache.join("module-webui").join(&id);
+    let destination_text = destination.to_string_lossy();
+    let source = format!("/data/adb/modules/{id}/webroot");
+    let command = format!(
+        "rm -rf {destination} && mkdir -p {destination} && cp -a {source}/. {destination}/ && chmod -R a+rX {destination}",
+        destination = shell_quote(&destination_text),
+        source = shell_quote(&source),
+    );
+    let (code, output) = root_command(&command);
+    if code != 0 {
+        return copy_module_result(module_result(code, output), buffer, capacity);
+    }
+
+    let entry = ["index.html", "index.htm"]
+        .into_iter()
+        .map(|name| destination.join(name))
+        .find(|path| path.is_file());
+    let Some(entry) = entry else {
+        return copy_module_result(
+            module_result(1, "webroot/index.html was not found".to_owned()),
+            buffer,
+            capacity,
+        );
+    };
+    copy_module_result(
+        module_result(0, entry.to_string_lossy().into_owned()),
         buffer,
         capacity,
     )
