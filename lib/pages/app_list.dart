@@ -6,8 +6,8 @@ import 'package:nekosu/apps.dart';
 import 'package:nekosu/card_group.dart';
 import 'package:nekosu/ffi.dart';
 import 'package:nekosu/haze_app_bar.dart';
+import 'package:nekosu/layout_insets.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
-import 'package:nekosu/navbar.dart';
 import 'package:nekosu/pages/app_detail.dart';
 
 class AppListPage extends StatefulWidget {
