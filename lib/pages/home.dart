@@ -3,20 +3,39 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:nekosu/card_group.dart';
+import 'package:nekosu/ffi.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 
 enum InstallStatus { installed, needUpdate, needReboot, notInstalled, unknown }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   static const _managerVersion = '1.0.0';
+
+  InstallStatus _installStatus = InstallStatus.unknown;
+  bool _isGki = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!NcoreFfi.available) return;
+    _installStatus = NcoreFfi.isInstalled
+        ? InstallStatus.installed
+        : InstallStatus.notInstalled;
+    _isGki = NcoreFfi.isGki;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const _HomeScreenContent(
-      installStatus: InstallStatus.installed,
-      isGki: false,
+    return _HomeScreenContent(
+      installStatus: _installStatus,
+      isGki: _isGki,
       managerVersion: _managerVersion,
     );
   }
@@ -263,6 +282,8 @@ class _DeviceInfoListState extends State<_DeviceInfoList> {
 
   Future<String> _loadKernelVersion() async {
     if (!Platform.isAndroid) return Platform.operatingSystem;
+    final release = NcoreFfi.kernelRelease;
+    if (release != null && release.isNotEmpty) return release;
     try {
       final result = await Process.run('/system/bin/uname', const ['-r']);
       if (result.exitCode == 0) {

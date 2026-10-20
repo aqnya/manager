@@ -1,14 +1,13 @@
 [package]
-name = "jni"
+name = "ncore_ffi"
 version = "1.0.3"
 edition.workspace = true
 
 [lib]
-name = "jni"
+name = "ncore_ffi"
 crate-type = ["cdylib"]
 
 [dependencies]
-jni = "0.22"
 libc = "0.2"
 log.workspace = true
 android_logger = "0.15"

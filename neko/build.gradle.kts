@@ -26,7 +26,7 @@ val ndkDirProvider = androidComponents.sdkComponents.ndkDirectory
 val buildRust =
     tasks.register("buildRust") {
         group = "rust"
-        description = "Build ncore, bootpatcher and the JNI library for Android arm64"
+        description = "Build ncore, bootpatcher and the FFI library for Android arm64"
 
         doLast {
             val ndkFile = ndkDirProvider.get().asFile
@@ -50,7 +50,7 @@ val buildRust =
                 commandLine(cargoArgs)
             }.result.get().assertNormalExitValue()
 
-            listOf("ncore" to "libncore.so", "bootpatcher" to "libbootpatcher.so", "libjni.so" to "libjni.so").forEach { (binary, name) ->
+            listOf("ncore" to "libncore.so", "bootpatcher" to "libbootpatcher.so", "libncore_ffi.so" to "libncore_ffi.so").forEach { (binary, name) ->
                 val source = File(targetDir, "aarch64-linux-android/release/$binary")
                 check(source.isFile) { "Rust binary not found: $source" }
                 val target = File(abiDir, name)
