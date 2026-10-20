@@ -18,7 +18,7 @@ android {
         minSdk = 31
     }
 
-    sourceSets.getByName("main").jniLibs.srcDir(rustJniLibsDir)
+    sourceSets.getByName("main").jniLibs.srcDir(rustJniLibsDir.get().asFile)
 }
 
 // Same layout as LSPosed-cirno's Rust modules: build with cargo-ndk and let
