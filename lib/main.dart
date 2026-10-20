@@ -5,7 +5,6 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:nekosu/pages/home.dart';
 import 'package:nekosu/pages/settings.dart';
 import 'package:nekosu/navbar.dart';
-import 'package:nekosu/ffi.dart';
 
 void main() {
   runApp(const MyApp());

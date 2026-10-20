@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
-import 'package:nekosu/ffi.dart';
 
 enum InstallStatus { installed, notInstalled }
 
