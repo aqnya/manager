@@ -323,18 +323,16 @@ class NcoreFfi {
     }
   }
 
-  static String? _readModuleString(
-    int Function(Pointer<Uint8>, int) call, {
-    bool retry = true,
-  }) {
+  static String? _readModuleString(_StringDart? function, {bool retry = true}) {
+    if (function == null) return null;
     if (!retry) {
-      return _readModuleStringOnce(call);
+      return _readModuleStringOnce(function);
     }
     var capacity = 4096;
     for (var attempt = 0; attempt < 4; attempt++) {
       final buffer = calloc<Uint8>(capacity);
       try {
-        final length = call(buffer, capacity);
+        final length = function(buffer, capacity);
         if (length < 0) return null;
         if (length < capacity) {
           return buffer.cast<Utf8>().toDartString(length: length);
