@@ -14,6 +14,7 @@
   "running": "正在运行",
   "clickToInstall": "点击安装",
   "needUpdate": "需要更新",
+  "about": "关于",
   "kernelVersion": "内核版本",
   "androidVersion": "Android 版本",
   "deviceModel": "设备型号",

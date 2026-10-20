@@ -59,6 +59,10 @@
   "@needUpdate": {
     "description": "Status indicating the installed version needs an update"
   },
+  "about": "About",
+  "@about": {
+    "description": "Label for the about section"
+  },
   "kernelVersion": "Kernel Version",
   "@kernelVersion": {
     "description": "Label for kernel version info"
