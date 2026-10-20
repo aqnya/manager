@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' show ImageFilter;
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
@@ -59,14 +60,9 @@ class _HomeScreenContent extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: scheme.surfaceContainer,
-      appBar: AppBar(
-        title: Text(l10n.appTitle),
-        backgroundColor: scheme.surfaceContainer,
-        surfaceTintColor: Colors.transparent,
-        scrolledUnderElevation: 0,
-      ),
       body: CustomScrollView(
         slivers: [
+          _HazeAppBar(title: l10n.appTitle),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             sliver: SliverToBoxAdapter(
@@ -91,6 +87,37 @@ class _HomeScreenContent extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _HazeAppBar extends StatelessWidget {
+  const _HazeAppBar({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return SliverAppBar(
+      pinned: true,
+      title: Text(title),
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+      elevation: 0,
+      flexibleSpace: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: SizedBox.expand(
+            child: ColoredBox(
+              color: scheme.surfaceContainer.withValues(alpha: 0.78),
+            ),
+          ),
+        ),
       ),
     );
   }

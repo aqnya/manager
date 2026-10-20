@@ -14,7 +14,7 @@ dependencies:
   intl: any
 
   cupertino_icons: ^1.0.8
-  dynamic_color: ^1.8.1
+  dynamic_color: ^2.1.0
   ffi: ^2.2.0
   device_info_plus: ^13.1.0
   settings_ui: ^3.0.1
