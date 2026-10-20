@@ -56,6 +56,12 @@ android {
             signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 }
 
 kotlin {
@@ -68,6 +74,10 @@ flutter {
     source = "../.."
 }
 
-dependencies {
-    implementation(project(":neko"))
+val nekoRustJniLibsDir =
+    rootProject.layout.buildDirectory.dir("neko/generated/rust/jniLibs").get().asFile
+android.sourceSets.getByName("main").jniLibs.directories.add(nekoRustJniLibsDir.path)
+
+tasks.matching { it.name.startsWith("merge") && it.name.endsWith("JniLibFolders") }.configureEach {
+    dependsOn(":neko:buildRust")
 }
