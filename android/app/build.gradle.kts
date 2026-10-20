@@ -6,7 +6,12 @@ plugins {
 
 android {
     namespace = "com.example.nekosu"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk {
+        version =
+            release(37) {
+                minorApiLevel = 1
+            }
+    }
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -19,7 +24,7 @@ android {
         applicationId = "com.example.nekosu"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 31
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -42,4 +47,8 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation(project(":neko"))
 }

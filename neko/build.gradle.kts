@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.library)
 }
 
+val rustJniLibsDir = layout.buildDirectory.dir("generated/rust/jniLibs")
+
 android {
     namespace = "me.nekosu.neko"
     ndkVersion = "29.0.14206865"
@@ -15,6 +17,8 @@ android {
     defaultConfig {
         minSdk = 31
     }
+
+    sourceSets.getByName("main").jniLibs.srcDir(rustJniLibsDir)
 }
 
 // Same layout as LSPosed-cirno's Rust modules: build with cargo-ndk and let
@@ -35,7 +39,7 @@ val buildRust =
             val strip = File(binDir, "llvm-strip")
 
             val targetDir = layout.buildDirectory.dir("rust/target").get().asFile
-            val outJniDir = layout.buildDirectory.dir("generated/rust/jniLibs").get().asFile
+            val outJniDir = rustJniLibsDir.get().asFile
             val abiDir = File(outJniDir, "arm64-v8a").apply { mkdirs() }
 
             val cargoArgs = mutableListOf("cargo", "ndk", "--platform", "28", "-t", "arm64-v8a")
