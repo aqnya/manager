@@ -20,6 +20,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:       
+      NDK_VERSION: r29
+      ANDROID_NDK_API_LEVEL: "28"
+      ANDROID_NDK_HOME: ${{ github.workspace }}/android-ndk
     
     steps:
       - uses: actions/checkout@v5
@@ -43,22 +47,37 @@ jobs:
           flutter-version: '3.44.2'
           cache: true
 
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Cache Android NDK
+        id: ndk-cache
+        uses: actions/cache@v6
         with:
-          targets: aarch64-linux-android
+          path: ${{ env.ANDROID_NDK_HOME }}
+          key: android-ndk-${{ env.NDK_VERSION }}
+
+      - name: Install the Android NDK
+        if: steps.ndk-cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          url="https://dl.google.com/android/repository/android-ndk-${NDK_VERSION}-linux.zip"
+          curl -fSL --retry 3 -o ndk.zip "$url"
+          rm -rf "$ANDROID_NDK_HOME" android-ndk-"$NDK_VERSION"
+          unzip -q ndk.zip
+          mv android-ndk-"$NDK_VERSION" "$ANDROID_NDK_HOME"
+          rm -f ndk.zip
+
+      - name: Set up Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add aarch64-linux-android
+
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk --locked
 
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-multilib
-
-      - name: Build ncore
-        run: |
-          git clone https://github.com/nksu-crew/ncore.git
-          cd ncore
-          cargo install cargo-ndk
-          cargo ndk -t arm64-v8a -o ../android/app/src/main/jniLibs/ build --release
 
       - name: Build APK
         run: |

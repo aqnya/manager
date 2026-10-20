@@ -12,9 +12,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final installStatus = NCore.isInstalled()
-        ? InstallStatus.installed
-        : InstallStatus.notInstalled;
+    final installStatus = InstallStatus.installed;
     return _HomeScreenContent(
       installStatus: installStatus,
       suCount: 0,

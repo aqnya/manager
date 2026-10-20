@@ -8,9 +8,6 @@ import 'package:nekosu/navbar.dart';
 import 'package:nekosu/ffi.dart';
 
 void main() {
-  if (ncoreInit() < 0) {
-    debugPrint("failed to init ncore");
-  }
   runApp(const MyApp());
 }
 
