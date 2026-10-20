@@ -23,134 +23,45 @@ class ModernCapsuleNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final count = tabs.length;
+    final labelStyle = Theme.of(context).textTheme.labelMedium;
 
-    final double alignmentX = count > 1
-        ? -1.0 + (selectedIndex * 2 / (count - 1))
-        : 0.0;
-
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 16, left: 24, right: 24),
-        child: Container(
-          height: 68,
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(34),
-            boxShadow: [
-              BoxShadow(
-                color: scheme.shadow.withOpacity(0.15),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              AnimatedAlign(
-                alignment: Alignment(alignmentX, 0),
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeOutCubic,
-                child: FractionallySizedBox(
-                  widthFactor: 1 / count,
-                  child: Padding(
-                    padding: const EdgeInsets.all(6.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: scheme.secondaryContainer,
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Row(
-                children: List.generate(
-                  count,
-                  (i) => Expanded(
-                    child: _TabItem(
-                      tab: tabs[i],
-                      selected: selectedIndex == i,
-                      scheme: scheme,
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        onTabSelected(i);
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+    return NavigationBarTheme(
+      data: NavigationBarThemeData(
+        backgroundColor: scheme.surfaceContainer,
+        indicatorColor: scheme.primaryContainer,
+        elevation: 0,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          return IconThemeData(
+            color: states.contains(WidgetState.selected)
+                ? scheme.onPrimaryContainer
+                : scheme.onSurfaceVariant,
+            size: 24,
+          );
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          return labelStyle?.copyWith(
+            color: states.contains(WidgetState.selected)
+                ? scheme.onPrimaryContainer
+                : scheme.onSurfaceVariant,
+          );
+        }),
       ),
-    );
-  }
-}
-
-class _TabItem extends StatelessWidget {
-  const _TabItem({
-    required this.tab,
-    required this.selected,
-    required this.scheme,
-    required this.onTap,
-  });
-
-  final NavBarTab tab;
-  final bool selected;
-  final ColorScheme scheme;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              transitionBuilder: (child, animation) {
-                return ScaleTransition(
-                  scale: animation,
-                  child: FadeTransition(opacity: animation, child: child),
-                );
-              },
-              child: IconTheme(
-                key: ValueKey<bool>(selected),
-                data: IconThemeData(
-                  color: selected
-                      ? scheme.onSecondaryContainer
-                      : scheme.onSurfaceVariant,
-                  size: selected ? 26 : 24,
-                ),
-                child: (selected && tab.activeIcon != null)
-                    ? tab.activeIcon!
-                    : tab.icon,
-              ),
+      child: NavigationBar(
+        selectedIndex: selectedIndex,
+        height: 80,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        onDestinationSelected: (index) {
+          HapticFeedback.lightImpact();
+          onTabSelected(index);
+        },
+        destinations: [
+          for (final tab in tabs)
+            NavigationDestination(
+              icon: tab.icon,
+              selectedIcon: tab.activeIcon ?? tab.icon,
+              label: tab.label,
             ),
-            const SizedBox(height: 4),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 250),
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                color: selected
-                    ? scheme.onSecondaryContainer
-                    : scheme.onSurfaceVariant,
-              ),
-              child: Text(
-                tab.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

@@ -20,16 +20,18 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return DynamicColorBuilder(
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-        final seedColor = lightDynamic?.primary ?? _fallbackSeed;
-
-        final lightScheme = ColorScheme.fromSeed(
-          seedColor: seedColor,
-          brightness: Brightness.light,
-        );
-        final darkScheme = ColorScheme.fromSeed(
-          seedColor: seedColor,
-          brightness: Brightness.dark,
-        );
+        final lightScheme =
+            lightDynamic ??
+            ColorScheme.fromSeed(
+              seedColor: _fallbackSeed,
+              brightness: Brightness.light,
+            );
+        final darkScheme =
+            darkDynamic ??
+            ColorScheme.fromSeed(
+              seedColor: _fallbackSeed,
+              brightness: Brightness.dark,
+            );
 
         return MaterialApp(
           onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
@@ -44,11 +46,13 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
             colorScheme: lightScheme,
             fontFamily: _systemFontFamily,
+            scaffoldBackgroundColor: lightScheme.surfaceContainer,
           ),
           darkTheme: ThemeData(
             useMaterial3: true,
             colorScheme: darkScheme,
             fontFamily: _systemFontFamily,
+            scaffoldBackgroundColor: darkScheme.surfaceContainer,
           ),
           themeMode: ThemeMode.system,
           home: const MyHomePage(),
