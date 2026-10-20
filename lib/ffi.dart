@@ -14,15 +14,18 @@ class NcoreFfi {
   NcoreFfi._();
 
   static final DynamicLibrary? _library = _openLibrary();
-  static final _IntDart? _init = _lookup<_IntNative, _IntDart>('ncore_init');
-  static final _CtlDart? _ctl = _lookup<_CtlNative, _CtlDart>('ncore_ctl');
-  static final _IntDart? _isGki = _lookup<_IntNative, _IntDart>('ncore_is_gki');
-  static final _StringDart? _kernelVersion =
-      _lookup<_StringNative, _StringDart>('ncore_kernel_version');
-  static final _StringDart? _kernelRelease =
-      _lookup<_StringNative, _StringDart>('ncore_kernel_release');
-  static final _StringDart? _moduleVersion =
-      _lookup<_StringNative, _StringDart>('ncore_module_version');
+  static final _IntDart? _init = _lookupInt('ncore_init');
+  static final _CtlDart? _ctl = _lookupCtl('ncore_ctl');
+  static final _IntDart? _isGki = _lookupInt('ncore_is_gki');
+  static final _StringDart? _kernelVersion = _lookupString(
+    'ncore_kernel_version',
+  );
+  static final _StringDart? _kernelRelease = _lookupString(
+    'ncore_kernel_release',
+  );
+  static final _StringDart? _moduleVersion = _lookupString(
+    'ncore_module_version',
+  );
 
   static final bool available = _ctl != null && _isGki != null;
 
@@ -37,11 +40,31 @@ class NcoreFfi {
     }
   }
 
-  static T? _lookup<T extends Function, F extends Function>(String name) {
+  static _IntDart? _lookupInt(String name) {
     final library = _library;
     if (library == null) return null;
     try {
-      return library.lookupFunction<T, F>(name);
+      return library.lookupFunction<_IntNative, _IntDart>(name);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static _CtlDart? _lookupCtl(String name) {
+    final library = _library;
+    if (library == null) return null;
+    try {
+      return library.lookupFunction<_CtlNative, _CtlDart>(name);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static _StringDart? _lookupString(String name) {
+    final library = _library;
+    if (library == null) return null;
+    try {
+      return library.lookupFunction<_StringNative, _StringDart>(name);
     } catch (_) {
       return null;
     }
