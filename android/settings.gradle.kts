@@ -24,5 +24,5 @@ plugins {
 }
 
 include(":app")
-include ':neko'
-project(':neko').projectDir = new File(rootProject.projectDir, '../neko')
+include(":neko")
+project(":neko").projectDir = File(rootProject.projectDir, "../neko")
