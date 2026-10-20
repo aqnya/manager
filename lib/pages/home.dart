@@ -1,43 +1,23 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/material.dart';
+import 'package:nekosu/card_group.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 
-enum InstallStatus { installed, notInstalled }
+enum InstallStatus { installed, needUpdate, needReboot, notInstalled, unknown }
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    final installStatus = InstallStatus.installed;
-    return _HomeScreenContent(
-      installStatus: installStatus,
-      suCount: 0,
-      ruleCount: 0,
-      showRules: false,
-    );
-  }
-}
-
-class RebootListPopup extends StatelessWidget {
-  const RebootListPopup({super.key});
+  static const _managerVersion = '1.0.0';
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert),
-      onSelected: (value) {},
-      itemBuilder: (context) => [
-        PopupMenuItem(value: 'reboot', child: Text(l10n.reboot)),
-        PopupMenuItem(value: 'recovery', child: Text(l10n.rebootToRecovery)),
-        PopupMenuItem(
-          value: 'bootloader',
-          child: Text(l10n.rebootToBootloader),
-        ),
-      ],
+    return const _HomeScreenContent(
+      installStatus: InstallStatus.installed,
+      isGki: false,
+      managerVersion: _managerVersion,
     );
   }
 }
@@ -45,77 +25,50 @@ class RebootListPopup extends StatelessWidget {
 class _HomeScreenContent extends StatelessWidget {
   const _HomeScreenContent({
     required this.installStatus,
-    required this.suCount,
-    required this.ruleCount,
-    required this.showRules,
-    this.onNavigateToApps,
-    this.onNavigateToRules,
-    this.onInstallClick,
+    required this.isGki,
+    required this.managerVersion,
   });
 
   final InstallStatus installStatus;
-  final int suCount;
-  final int ruleCount;
-  final bool showRules;
-  final VoidCallback? onNavigateToApps;
-  final VoidCallback? onNavigateToRules;
-  final VoidCallback? onInstallClick;
+  final bool isGki;
+  final String managerVersion;
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
+      backgroundColor: scheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
           SliverAppBar.medium(
-            title: Text(
-              l10n.appTitle,
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                fontWeight: FontWeight.w400,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            actions: const [RebootListPopup()],
-            backgroundColor: Theme.of(context).colorScheme.surface,
+            title: Text(l10n.appTitle),
+            backgroundColor: scheme.surfaceContainer,
             surfaceTintColor: Colors.transparent,
             scrolledUnderElevation: 0,
           ),
-
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                _StatusCard(
-                  status: installStatus,
-                  onClick: onInstallClick ?? () {},
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _StatCard(
-                        label: l10n.superuser,
-                        value: suCount.toString(),
-                        icon: Icons.numbers,
-                        onClick: onNavigateToApps ?? () {},
-                      ),
-                    ),
-                    if (showRules) ...[
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _StatCard(
-                          label: l10n.fmacRules,
-                          value: ruleCount.toString(),
-                          icon: Icons.rule,
-                          onClick: onNavigateToRules ?? () {},
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const _DeviceInfoCard(),
-              ]),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _StatusCard(
+                    status: installStatus,
+                    isGki: isGki,
+                    managerVersion: managerVersion,
+                  ),
+                  const SizedBox(height: 13),
+                  _SectionLabel(text: l10n.deviceAndKernel),
+                  const SizedBox(height: 13),
+                  const _DeviceInfoList(),
+                  const SizedBox(height: 13),
+                  _SectionLabel(text: l10n.about),
+                  const SizedBox(height: 13),
+                  const _AboutItem(),
+                ],
+              ),
             ),
           ),
         ],
@@ -125,10 +78,15 @@ class _HomeScreenContent extends StatelessWidget {
 }
 
 class _StatusCard extends StatelessWidget {
-  const _StatusCard({required this.status, required this.onClick});
+  const _StatusCard({
+    required this.status,
+    required this.isGki,
+    required this.managerVersion,
+  });
 
   final InstallStatus status;
-  final VoidCallback onClick;
+  final bool isGki;
+  final String managerVersion;
 
   @override
   Widget build(BuildContext context) {
@@ -136,58 +94,49 @@ class _StatusCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
-    final isInstalled = status == InstallStatus.installed;
+    final isWorking = status == InstallStatus.installed;
+    final isUpdate =
+        status == InstallStatus.needUpdate ||
+        status == InstallStatus.needReboot;
 
-    final containerColor = isInstalled
+    final containerColor = isWorking
         ? scheme.secondaryContainer
+        : isUpdate
+        ? scheme.tertiaryContainer
         : scheme.errorContainer;
-    final contentColor = isInstalled
+    final contentColor = isWorking
         ? scheme.onSecondaryContainer
+        : isUpdate
+        ? scheme.onTertiaryContainer
         : scheme.onErrorContainer;
+    final icon = isWorking
+        ? Icons.check_circle_rounded
+        : isUpdate
+        ? Icons.system_update_rounded
+        : Icons.warning_rounded;
+    final title = isWorking
+        ? l10n.running
+        : isUpdate
+        ? l10n.needUpdate
+        : l10n.notInstalled;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOutCubic,
       decoration: BoxDecoration(
         color: containerColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: contentColor.withOpacity(0.08), width: 1),
+        borderRadius: BorderRadius.circular(28),
       ),
       clipBehavior: Clip.antiAlias,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onClick,
-          splashColor: contentColor.withOpacity(0.08),
-          highlightColor: contentColor.withOpacity(0.04),
+          onTap: () {},
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: contentColor.withOpacity(0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 250),
-                    transitionBuilder: (child, anim) => ScaleTransition(
-                      scale: anim,
-                      child: FadeTransition(opacity: anim, child: child),
-                    ),
-                    child: Icon(
-                      isInstalled
-                          ? Icons.check_circle_outline_rounded
-                          : Icons.warning_amber_rounded,
-                      key: ValueKey(isInstalled),
-                      color: contentColor,
-                      size: 24,
-                    ),
-                  ),
-                ),
+                Icon(icon, color: contentColor, size: 32),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -195,26 +144,26 @@ class _StatusCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        isInstalled ? l10n.installed : l10n.notInstalled,
+                        title,
                         style: textTheme.titleMedium?.copyWith(
                           color: contentColor,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 3),
                       Text(
-                        isInstalled ? l10n.running : l10n.clickToInstall,
+                        isWorking ? managerVersion : l10n.clickToInstall,
                         style: textTheme.bodyMedium?.copyWith(
-                          color: contentColor.withOpacity(0.75),
+                          color: contentColor.withValues(alpha: 0.8),
                         ),
                       ),
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: contentColor.withOpacity(0.5),
-                  size: 22,
+                _ModeLabel(
+                  label: isGki ? 'GKI' : 'LKM',
+                  color: contentColor,
+                  containerColor: contentColor.withValues(alpha: 0.16),
                 ),
               ],
             ),
@@ -225,85 +174,65 @@ class _StatusCard extends StatelessWidget {
   }
 }
 
-class _StatCard extends StatelessWidget {
-  const _StatCard({
+class _ModeLabel extends StatelessWidget {
+  const _ModeLabel({
     required this.label,
-    required this.value,
-    required this.icon,
-    required this.onClick,
+    required this.color,
+    required this.containerColor,
   });
 
   final String label;
-  final String value;
-  final IconData icon;
-  final VoidCallback onClick;
+  final Color color;
+  final Color containerColor;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      elevation: 0,
-      color: scheme.surfaceContainer,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onClick,
-        child: SizedBox(
-          width: double.infinity,
-          child: Stack(
-            children: [
-              Positioned(
-                right: 18,
-                bottom: 12,
-                child: Icon(
-                  icon,
-                  size: 58,
-                  color: scheme.primary.withValues(alpha: 0.35),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      value,
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: scheme.onSurface,
-                          ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      label,
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: containerColor,
+        borderRadius: BorderRadius.circular(50),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        style: Theme.of(context).textTheme.labelMedium
+            ?.copyWith(color: color, fontWeight: FontWeight.w600),
       ),
     );
   }
 }
 
-class _DeviceInfoCard extends StatefulWidget {
-  const _DeviceInfoCard();
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel({required this.text});
+
+  final String text;
 
   @override
-  State<_DeviceInfoCard> createState() => _DeviceInfoCardState();
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, top: 4),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.titleSmall
+            ?.copyWith(color: Theme.of(context).colorScheme.primary),
+      ),
+    );
+  }
 }
 
-class _DeviceInfoCardState extends State<_DeviceInfoCard> {
-  String _model = '...';
-  String _androidVersion = '...';
+class _DeviceInfoList extends StatefulWidget {
+  const _DeviceInfoList();
+
+  @override
+  State<_DeviceInfoList> createState() => _DeviceInfoListState();
+}
+
+class _DeviceInfoListState extends State<_DeviceInfoList> {
   String _kernelVersion = '...';
+  String _androidVersion = '...';
+  String _model = '...';
+  String _fingerprint = '...';
 
   @override
   void initState() {
@@ -312,141 +241,156 @@ class _DeviceInfoCardState extends State<_DeviceInfoCard> {
   }
 
   Future<void> _loadDeviceInfo() async {
-    final deviceInfo = DeviceInfoPlugin();
-    try {
-      if (Platform.isAndroid) {
-        final androidInfo = await deviceInfo.androidInfo;
-        if (mounted) {
-          setState(() {
-            _model = '${androidInfo.brand} ${androidInfo.model}';
-            _androidVersion = androidInfo.version.release;
-            _kernelVersion = "5.15";
-          });
-        }
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() {
-          _model = 'Unknown';
-          _androidVersion = Platform.operatingSystem;
-          _kernelVersion = "5.15";
-        });
-      }
+    if (!Platform.isAndroid) {
+      _setFallback();
+      return;
     }
+
+    try {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      if (!mounted) return;
+      setState(() {
+        _kernelVersion = _parseKernelVersion(Platform.operatingSystemVersion);
+        _androidVersion = androidInfo.version.release;
+        _model = '${androidInfo.manufacturer} ${androidInfo.model}';
+        _fingerprint = androidInfo.fingerprint;
+      });
+    } catch (_) {
+      _setFallback();
+    }
+  }
+
+  void _setFallback() {
+    if (!mounted) return;
+    setState(() {
+      _kernelVersion = _parseKernelVersion(Platform.operatingSystemVersion);
+      _androidVersion = Platform.operatingSystem;
+      _model = 'Unknown';
+      _fingerprint = 'Unknown';
+    });
+  }
+
+  String _parseKernelVersion(String value) {
+    final match = RegExp(r'(?:Linux version\s+)?(\S+)')
+        .firstMatch(value.trim());
+    final version = match?.group(1);
+    return version == null || version.isEmpty ? 'Unknown' : version;
   }
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-
-    final items = [
-      (Icons.memory, l10n.kernelVersion, _kernelVersion),
-      (Icons.android, l10n.androidVersion, _androidVersion),
-      (Icons.phone_android, l10n.deviceModel, _model),
-      (Icons.settings, l10n.managerVersion, '1.0.0'),
+    final entries = [
+      _InfoEntry(label: l10n.kernelVersion, value: _kernelVersion),
+      _InfoEntry(label: l10n.androidVersion, value: _androidVersion),
+      _InfoEntry(label: l10n.deviceModel, value: _model),
+      _InfoEntry(label: l10n.fingerprint, value: _fingerprint, monospace: true),
     ];
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    scheme.primary.withValues(alpha: 0.08),
-                    Colors.transparent,
+    return _SegmentedList(entries: entries);
+  }
+}
+
+class _InfoEntry {
+  const _InfoEntry({
+    required this.label,
+    required this.value,
+    this.monospace = false,
+  });
+
+  final String label;
+  final String value;
+  final bool monospace;
+}
+
+class _SegmentedList extends StatelessWidget {
+  const _SegmentedList({required this.entries});
+
+  final List<_InfoEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final scheme = Theme.of(context).colorScheme;
+
+    return Column(
+      children: [
+        for (int index = 0; index < entries.length; index++) ...[
+          if (index > 0) const SizedBox(height: 2),
+          ClipRRect(
+            borderRadius: groupShape(index, entries.length),
+            child: ColoredBox(
+              color: scheme.surfaceBright,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(entries[index].label, style: textTheme.bodyLarge),
+                    const SizedBox(height: 2),
+                    Text(
+                      entries[index].value,
+                      style: textTheme.bodyMedium?.copyWith(
+                        fontFamily: entries[index].monospace
+                            ? 'monospace'
+                            : null,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
           ),
-          Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28),
-            ),
-            elevation: 0,
-            color: scheme.surfaceContainer,
-            child: Column(
-              children: [
-                for (int i = 0; i < items.length; i++) ...[
-                  _DeviceInfoItem(
-                    icon: items[i].$1,
-                    title: items[i].$2,
-                    value: items[i].$3,
-                  ),
-                  if (i < items.length - 1)
-                    Divider(
-                      indent: 20,
-                      endIndent: 20,
-                      thickness: 0.5,
-                      color: scheme.outlineVariant,
-                      height: 0,
-                    ),
-                ],
-              ],
-            ),
-          ),
         ],
-      ),
+      ],
     );
   }
 }
 
-class _DeviceInfoItem extends StatelessWidget {
-  const _DeviceInfoItem({
-    required this.icon,
-    required this.title,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String title;
-  final String value;
+class _AboutItem extends StatelessWidget {
+  const _AboutItem();
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      child: Row(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: scheme.primaryContainer.withValues(alpha: 0.8),
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: Icon(icon, color: scheme.onPrimaryContainer, size: 20),
-          ),
-          const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Material(
+      color: scheme.surfaceBright,
+      borderRadius: BorderRadius.circular(20),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {},
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
             children: [
-              Text(
-                title,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: scheme.onSurface.withValues(alpha: 0.55),
-                  fontWeight: FontWeight.w500,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l10n.aboutCardTitle, style: textTheme.titleMedium),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.aboutCardDescription,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.bodyMedium,
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: scheme.onSurface,
-                  fontWeight: FontWeight.w400,
-                ),
+              Icon(
+                Icons.keyboard_arrow_right_rounded,
+                color: scheme.onSurfaceVariant,
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

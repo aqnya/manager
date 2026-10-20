@@ -51,9 +51,13 @@
   "@running": {
     "description": "Status indicating the software is running"
   },
-  "clickToInstall": "Click to install",
+  "clickToInstall": "Tap to Install",
   "@clickToInstall": {
-    "description": "Instruction to click for installation"
+    "description": "Instruction to tap for installation"
+  },
+  "needUpdate": "Update Required",
+  "@needUpdate": {
+    "description": "Status indicating the installed version needs an update"
   },
   "kernelVersion": "Kernel Version",
   "@kernelVersion": {
@@ -70,6 +74,22 @@
   "managerVersion": "Manager Version",
   "@managerVersion": {
     "description": "Label for manager version info"
+  },
+  "deviceAndKernel": "Device & kernel",
+  "@deviceAndKernel": {
+    "description": "Section label for device and kernel information"
+  },
+  "fingerprint": "Fingerprint",
+  "@fingerprint": {
+    "description": "Label for the Android build fingerprint"
+  },
+  "aboutCardTitle": "Learn nekosu",
+  "@aboutCardTitle": {
+    "description": "Title of the about card on the home page"
+  },
+  "aboutCardDescription": "Learn more about nekosu feature and how to use",
+  "@aboutCardDescription": {
+    "description": "Description of the about card on the home page"
   },
   "appearance": "Appearance",
   "@appearance": {
