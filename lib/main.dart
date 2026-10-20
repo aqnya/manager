@@ -80,6 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ];
 
     return Scaffold(
+      extendBody: true,
       body: _pages[_selectedIndex],
       bottomNavigationBar: ModernCapsuleNavBar(
         selectedIndex: _selectedIndex,

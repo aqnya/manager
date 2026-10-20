@@ -170,7 +170,12 @@ class _AppDetailPageState extends State<AppDetailPage> {
             leading: const BackButton(),
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+            padding: EdgeInsets.fromLTRB(
+              16,
+              8,
+              16,
+              32 + MediaQuery.viewPaddingOf(context).bottom,
+            ),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,

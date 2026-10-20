@@ -7,6 +7,7 @@ import 'package:nekosu/card_group.dart';
 import 'package:nekosu/ffi.dart';
 import 'package:nekosu/haze_app_bar.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
+import 'package:nekosu/navbar.dart';
 import 'package:nekosu/pages/app_detail.dart';
 
 class AppListPage extends StatefulWidget {
@@ -171,6 +172,7 @@ class _AppListPageState extends State<AppListPage> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final navBarClearance = floatingNavBarClearance(context);
 
     return Scaffold(
       backgroundColor: scheme.surfaceContainer,
@@ -248,29 +250,38 @@ class _AppListPageState extends State<AppListPage> {
             if (_loading)
               SliverFillRemaining(
                 hasScrollBody: false,
-                child: _LoadingState(label: l10n.loadingApps),
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: navBarClearance),
+                  child: _LoadingState(label: l10n.loadingApps),
+                ),
               )
             else if (_error != null && !_loaded)
               SliverFillRemaining(
                 hasScrollBody: false,
-                child: _ErrorState(
-                  message: l10n.loadAppsFailed,
-                  retryLabel: l10n.retry,
-                  onRetry: () => _load(),
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: navBarClearance),
+                  child: _ErrorState(
+                    message: l10n.loadAppsFailed,
+                    retryLabel: l10n.retry,
+                    onRetry: () => _load(),
+                  ),
                 ),
               )
             else if (_visibleApps.isEmpty)
               SliverFillRemaining(
                 hasScrollBody: false,
-                child: _EmptyState(
-                  query: _searchController.text.trim(),
-                  searching: _searching,
-                  l10n: l10n,
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: navBarClearance),
+                  child: _EmptyState(
+                    query: _searchController.text.trim(),
+                    searching: _searching,
+                    l10n: l10n,
+                  ),
                 ),
               )
             else
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                padding: EdgeInsets.fromLTRB(16, 12, 16, navBarClearance),
                 sliver: SliverList.builder(
                   itemCount: _visibleApps.length,
                   itemBuilder: (context, index) {

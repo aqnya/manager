@@ -6,6 +6,7 @@ import 'package:nekosu/card_group.dart';
 import 'package:nekosu/ffi.dart';
 import 'package:nekosu/haze_app_bar.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
+import 'package:nekosu/navbar.dart';
 
 enum InstallStatus { installed, needUpdate, needReboot, notInstalled, unknown }
 
@@ -57,6 +58,7 @@ class _HomeScreenContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final navBarClearance = floatingNavBarClearance(context);
 
     return Scaffold(
       backgroundColor: scheme.surfaceContainer,
@@ -64,7 +66,7 @@ class _HomeScreenContent extends StatelessWidget {
         slivers: [
           HazeSliverAppBar(title: Text(l10n.appTitle)),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            padding: EdgeInsets.fromLTRB(16, 12, 16, navBarClearance),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
