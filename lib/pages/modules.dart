@@ -374,7 +374,7 @@ class _ModuleCard extends StatefulWidget {
   State<_ModuleCard> createState() => _ModuleCardState();
 }
 
-enum _ModuleMenu { remove, undoRemove, uninstall }
+enum _ModuleMenu { uninstall }
 
 class _ModuleCardState extends State<_ModuleCard> {
   bool _expanded = false;
@@ -387,8 +387,14 @@ class _ModuleCardState extends State<_ModuleCard> {
     final module = widget.module;
     final pendingRemoval = module.remove;
     final textDecoration = pendingRemoval ? TextDecoration.lineThrough : null;
-    final actionEnabled = !pendingRemoval && module.enabled && !widget.busy;
+    final actionsVisible = !pendingRemoval && module.enabled;
+    final actionEnabled = actionsVisible && !widget.busy;
     final hasDescription = module.description.trim().isNotEmpty;
+    final actionCount = [
+      module.hasActionScript,
+      module.hasWebUi,
+    ].where((available) => available).length;
+    final showActionText = actionCount <= 1;
 
     return Material(
       color: scheme.surfaceBright,
@@ -475,8 +481,8 @@ class _ModuleCardState extends State<_ModuleCard> {
                       ),
                     ),
                   ],
-                  if (module.metamodule || module.update || pendingRemoval) ...[
-                    const SizedBox(height: 10),
+                  if (module.metamodule || module.update) ...[
+                    const SizedBox(height: 8),
                     Wrap(
                       spacing: 6,
                       runSpacing: 6,
@@ -491,11 +497,6 @@ class _ModuleCardState extends State<_ModuleCard> {
                             text: l10n.modulesUpdate,
                             color: scheme.tertiary,
                           ),
-                        if (pendingRemoval)
-                          _ModuleTag(
-                            text: l10n.modulesPendingRemoval,
-                            color: scheme.error,
-                          ),
                       ],
                     ),
                   ],
@@ -503,54 +504,51 @@ class _ModuleCardState extends State<_ModuleCard> {
               ),
             ),
           ),
-          Divider(
-            height: 1,
-            color: scheme.outlineVariant.withValues(alpha: 0.5),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Divider(
+              height: 1,
+              color: scheme.outlineVariant.withValues(alpha: 0.5),
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 2, 4, 2),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
             child: Row(
               children: [
-                if (module.hasActionScript)
-                  TextButton.icon(
+                if (actionsVisible && module.hasActionScript)
+                  _ModuleCardButton(
                     onPressed: actionEnabled ? widget.onAction : null,
-                    icon: const Icon(Icons.play_arrow_rounded, size: 20),
-                    label: Text(l10n.modulesAction),
+                    icon: Icons.play_arrow_rounded,
+                    label: showActionText ? l10n.modulesAction : null,
                   ),
-                if (module.hasWebUi)
-                  TextButton.icon(
-                    onPressed: pendingRemoval ? null : widget.onWebUi,
-                    icon: const Icon(Icons.public_rounded, size: 19),
-                    label: Text(l10n.modulesWebUi),
+                if (actionsVisible && module.hasActionScript && module.hasWebUi)
+                  const SizedBox(width: 8),
+                if (actionsVisible && module.hasWebUi)
+                  _ModuleCardButton(
+                    onPressed: actionEnabled ? widget.onWebUi : null,
+                    icon: Icons.code_rounded,
+                    label: showActionText ? l10n.modulesWebUi : null,
                   ),
                 const Spacer(),
+                _ModuleCardButton(
+                  onPressed: widget.busy
+                      ? null
+                      : pendingRemoval
+                      ? widget.onUndoRemove
+                      : widget.onRemove,
+                  icon: pendingRemoval
+                      ? Icons.refresh_rounded
+                      : Icons.delete_rounded,
+                  label: pendingRemoval
+                      ? l10n.modulesUndoRemove
+                      : l10n.modulesRemove,
+                ),
+                const SizedBox(width: 4),
                 PopupMenuButton<_ModuleMenu>(
                   enabled: !widget.busy,
                   tooltip: l10n.modulesMore,
-                  onSelected: (value) {
-                    switch (value) {
-                      case _ModuleMenu.remove:
-                        widget.onRemove();
-                        break;
-                      case _ModuleMenu.undoRemove:
-                        widget.onUndoRemove();
-                        break;
-                      case _ModuleMenu.uninstall:
-                        widget.onUninstall();
-                        break;
-                    }
-                  },
+                  onSelected: (_) => widget.onUninstall(),
                   itemBuilder: (context) => [
-                    if (pendingRemoval)
-                      PopupMenuItem(
-                        value: _ModuleMenu.undoRemove,
-                        child: Text(l10n.modulesUndoRemove),
-                      )
-                    else
-                      PopupMenuItem(
-                        value: _ModuleMenu.remove,
-                        child: Text(l10n.modulesRemove),
-                      ),
                     PopupMenuItem(
                       value: _ModuleMenu.uninstall,
                       child: Text(
@@ -569,6 +567,41 @@ class _ModuleCardState extends State<_ModuleCard> {
   }
 }
 
+class _ModuleCardButton extends StatelessWidget {
+  const _ModuleCardButton({
+    required this.onPressed,
+    required this.icon,
+    this.label,
+  });
+
+  final VoidCallback? onPressed;
+  final IconData icon;
+  final String? label;
+
+  @override
+  Widget build(BuildContext context) {
+    final textStyle = Theme.of(context).textTheme.labelMedium;
+    return FilledButton.tonal(
+      onPressed: onPressed,
+      style: FilledButton.styleFrom(
+        minimumSize: const Size(52, 36),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        visualDensity: VisualDensity.compact,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        textStyle: textStyle,
+        shape: const StadiumBorder(),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 20),
+          if (label != null) ...[const SizedBox(width: 7), Text(label!)],
+        ],
+      ),
+    );
+  }
+}
+
 class _ModuleTag extends StatelessWidget {
   const _ModuleTag({required this.text, required this.color});
 
@@ -578,15 +611,14 @@ class _ModuleTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(50),
       ),
       child: Text(
         text,
-        style: Theme.of(context).textTheme.labelSmall
-            ?.copyWith(color: color, fontWeight: FontWeight.w600),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: color),
       ),
     );
   }

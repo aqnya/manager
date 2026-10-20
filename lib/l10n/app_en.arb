@@ -234,8 +234,8 @@
   "modulesAction": "Action",
   "modulesWebUi": "WebUI",
   "modulesMore": "More",
-  "modulesRemove": "Remove after reboot",
-  "modulesUndoRemove": "Undo removal",
+  "modulesRemove": "Remove",
+  "modulesUndoRemove": "Undo",
   "modulesUninstall": "Uninstall now",
   "modulesUninstallConfirm": "Permanently delete \"{name}\"? This cannot be undone.",
   "@modulesUninstallConfirm": {
@@ -245,7 +245,7 @@
       }
     }
   },
-  "modulesMetamodule": "Metamodule",
+  "modulesMetamodule": "Meta",
   "modulesPendingRemoval": "Pending removal",
   "modulesUpdate": "Update pending",
   "modulesVersion": "Version",
