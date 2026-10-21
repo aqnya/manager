@@ -82,6 +82,7 @@ class MainActivity : FlutterActivity() {
                             "amoled" to prefs.getBoolean("amoled_mode", false),
                             "floatingNavBar" to prefs.getBoolean("floating_navbar", true),
                             "language" to prefs.getString("language", "system"),
+                            "displayMode" to prefs.getString("display_mode", null),
                         ),
                     )
                 }

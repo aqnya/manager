@@ -36,6 +36,7 @@ class SettingsController extends ChangeNotifier {
   bool amoled = false;
   bool floatingNavBar = true;
   String language = 'system';
+  String? displayMode;
 
   ThemeMode get flutterThemeMode => switch (themeMode) {
     AppThemeMode.system => ThemeMode.system,
@@ -63,6 +64,7 @@ class SettingsController extends ChangeNotifier {
       fontWeight = _fontWeightFromIndex(values['fontWeight']);
       amoled = values['amoled'] == true;
       floatingNavBar = values['floatingNavBar'] != false;
+      displayMode = values['displayMode']?.toString();
       final savedLanguage = values['language']?.toString();
       if (savedLanguage == 'en' || savedLanguage == 'zh') {
         language = savedLanguage!;
@@ -115,6 +117,13 @@ class SettingsController extends ChangeNotifier {
     language = value;
     notifyListeners();
     await _save('language', value);
+  }
+
+  Future<void> setDisplayMode(String value) async {
+    if (displayMode == value) return;
+    displayMode = value;
+    notifyListeners();
+    await _save('display_mode', value);
   }
 
   Future<void> _save(String key, Object value) async {

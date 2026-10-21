@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:nekosu/app_theme.dart';
+import 'package:nekosu/display_mode_controller.dart';
 import 'package:nekosu/layout_insets.dart';
 import 'package:nekosu/pages/app_list.dart';
 import 'package:nekosu/pages/home.dart';
@@ -11,9 +12,10 @@ import 'package:nekosu/pages/settings.dart';
 import 'package:nekosu/navbar.dart';
 import 'package:nekosu/settings_controller.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SettingsController.instance.load();
+  await SettingsController.instance.load();
+  await DisplayModeController.initialize();
   runApp(const MyApp());
 }
 

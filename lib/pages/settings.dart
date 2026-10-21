@@ -6,6 +6,7 @@ import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:nekosu/layout_insets.dart';
 import 'package:nekosu/log_export.dart';
 import 'package:nekosu/pages/about.dart';
+import 'package:nekosu/pages/display_mode.dart';
 import 'package:nekosu/settings_controller.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -144,6 +145,17 @@ class SettingsPage extends StatelessWidget {
                               _fontWeightLabel(settings.fontWeight, l10n),
                             ),
                             trailing: const Icon(Icons.chevron_right_rounded),
+                          ),
+                        ),
+                        ListRow(
+                          icon: const Icon(Icons.speed_rounded),
+                          headline: Text(l10n.settingsDisplayMode),
+                          supporting: Text(l10n.settingsDisplayModeSummary),
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () => Navigator.of(context).push<void>(
+                            MaterialPageRoute(
+                              builder: (context) => const DisplayModePage(),
+                            ),
                           ),
                         ),
                         ListRow(
