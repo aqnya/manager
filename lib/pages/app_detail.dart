@@ -250,22 +250,41 @@ class _AppDetailPageState extends State<AppDetailPage> {
       body: SafeArea(
         bottom: false,
         child: ListView(
-          padding: EdgeInsets.fromLTRB(16, 12, 16, 32 + bottomInset),
+          padding: EdgeInsets.only(top: 12, bottom: 32 + bottomInset),
           children: [
-            _ProfileToolbar(onMenuSelected: _onProfileMenuSelected),
-            const SizedBox(height: 18),
-            Text(
-              l10n.appProfileTitle,
-              style: textTheme.headlineLarge?.copyWith(color: scheme.onSurface),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _ProfileToolbar(onMenuSelected: _onProfileMenuSelected),
             ),
             const SizedBox(height: 18),
-            _AppIdentityCard(app: widget.app),
-            const SizedBox(height: 4),
-            _AuthorizationCard(allowed: _allowed, onChanged: _toggleAllowed),
-            const SizedBox(height: 4),
-            _ProfileSummaryCard(mode: _mode),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                l10n.appProfileTitle,
+                style: textTheme.headlineLarge?.copyWith(
+                  color: scheme.onSurface,
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            CardGroup(
+              children: [
+                _AppIdentityCard(app: widget.app),
+                _AuthorizationCard(
+                  allowed: _allowed,
+                  onChanged: _toggleAllowed,
+                ),
+                _ProfileSummaryCard(mode: _mode),
+              ],
+            ),
             const SizedBox(height: 12),
-            _ProfileModeSelector(mode: _mode, onSelected: _selectProfileMode),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _ProfileModeSelector(
+                mode: _mode,
+                onSelected: _selectProfileMode,
+              ),
+            ),
             AnimatedSize(
               duration: const Duration(milliseconds: 260),
               curve: Curves.easeOutCubic,
@@ -278,43 +297,36 @@ class _AppDetailPageState extends State<AppDetailPage> {
                         children: [
                           _SectionTitle(text: l10n.rootConfiguration),
                           const SizedBox(height: 8),
-                          _ConfigItem(
-                            index: 0,
-                            total: 4,
-                            icon: Icons.badge_outlined,
-                            title: l10n.rootUid,
-                            summary: '$_rootUid',
-                            onTap: _editRootUid,
-                          ),
-                          const SizedBox(height: 2),
-                          _ConfigItem(
-                            index: 1,
-                            total: 4,
-                            icon: Icons.tune_rounded,
-                            title: l10n.capabilities,
-                            summary: l10n.capabilitiesSelected(
-                              _caps.length,
-                              linuxCaps.length,
-                            ),
-                            onTap: _editCaps,
-                          ),
-                          const SizedBox(height: 2),
-                          _ConfigItem(
-                            index: 2,
-                            total: 4,
-                            icon: Icons.shield_outlined,
-                            title: l10n.selinuxDomain,
-                            summary: _domain,
-                            onTap: _editDomain,
-                          ),
-                          const SizedBox(height: 2),
-                          _ConfigItem(
-                            index: 3,
-                            total: 4,
-                            icon: Icons.layers_outlined,
-                            title: l10n.mountNamespace,
-                            summary: _namespaceLabel(l10n, _namespace),
-                            onTap: _editNamespace,
+                          CardGroup(
+                            children: [
+                              _ConfigRow(
+                                icon: Icons.badge_outlined,
+                                title: l10n.rootUid,
+                                summary: '$_rootUid',
+                                onTap: _editRootUid,
+                              ),
+                              _ConfigRow(
+                                icon: Icons.tune_rounded,
+                                title: l10n.capabilities,
+                                summary: l10n.capabilitiesSelected(
+                                  _caps.length,
+                                  linuxCaps.length,
+                                ),
+                                onTap: _editCaps,
+                              ),
+                              _ConfigRow(
+                                icon: Icons.shield_outlined,
+                                title: l10n.selinuxDomain,
+                                summary: _domain,
+                                onTap: _editDomain,
+                              ),
+                              _ConfigRow(
+                                icon: Icons.layers_outlined,
+                                title: l10n.mountNamespace,
+                                summary: _namespaceLabel(l10n, _namespace),
+                                onTap: _editNamespace,
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -394,72 +406,57 @@ class _AppIdentityCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final version = _appVersionLabel(app);
 
-    return Material(
-      color: scheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(24),
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            AppIcon(packageName: app.packageName, size: 40),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    app.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.titleMedium,
-                  ),
-                  if (version.isNotEmpty) ...[
-                    const SizedBox(height: 1),
-                    Text(
-                      version,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 1),
-                  Text(
-                    app.packageName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+    return ListRow(
+      icon: AppIcon(packageName: app.packageName, size: 40),
+      headline: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            app.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.titleMedium,
+          ),
+          if (version.isNotEmpty) ...[
+            const SizedBox(height: 1),
+            Text(
+              version,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(width: 10),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                _ModeLabel(
-                  label: l10n.uidLabel(app.uid),
-                  foreground: scheme.onSecondaryContainer,
-                  background: scheme.secondaryContainer,
-                ),
-                if (app.isSystem) ...[
-                  const SizedBox(height: 6),
-                  _ModeLabel(
-                    label: l10n.tagSystem,
-                    foreground: scheme.onTertiaryContainer,
-                    background: scheme.tertiaryContainer,
-                  ),
-                ],
-              ],
+          ],
+          const SizedBox(height: 1),
+          Text(
+            app.packageName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+      trailing: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          _ModeLabel(
+            label: l10n.uidLabel(app.uid),
+            foreground: scheme.onSecondaryContainer,
+            background: scheme.secondaryContainer,
+          ),
+          if (app.isSystem) ...[
+            const SizedBox(height: 6),
+            _ModeLabel(
+              label: l10n.tagSystem,
+              foreground: scheme.onTertiaryContainer,
+              background: scheme.tertiaryContainer,
             ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -477,35 +474,19 @@ class _AuthorizationCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
-    return Material(
-      color: scheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(24),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => onChanged(!allowed),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              Icon(
-                Icons.shield_rounded,
-                size: 28,
-                color: allowed ? scheme.primary : scheme.onSurface,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(l10n.superuser, style: textTheme.titleMedium),
-              ),
-              const SizedBox(width: 12),
-              _CapsuleSwitch(
-                value: allowed,
-                label: l10n.superuser,
-                onChanged: onChanged,
-              ),
-            ],
-          ),
-        ),
+    return ListRow(
+      icon: Icon(
+        Icons.shield_rounded,
+        size: 28,
+        color: allowed ? scheme.primary : scheme.onSurface,
       ),
+      headline: Text(l10n.superuser, style: textTheme.titleMedium),
+      trailing: _CapsuleSwitch(
+        value: allowed,
+        label: l10n.superuser,
+        onChanged: onChanged,
+      ),
+      onTap: () => onChanged(!allowed),
     );
   }
 }
@@ -525,33 +506,20 @@ class _ProfileSummaryCard extends StatelessWidget {
       _ProfileMode.custom => l10n.profileModeCustom,
     };
 
-    return Material(
-      color: scheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(24),
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Row(
-          children: [
-            Icon(Icons.person_rounded, size: 28, color: scheme.onSurface),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(l10n.appProfileTitle, style: textTheme.titleMedium),
-                  const SizedBox(height: 1),
-                  Text(
-                    modeLabel,
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
+    return ListRow(
+      icon: Icon(Icons.person_rounded, size: 28, color: scheme.onSurface),
+      headline: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.appProfileTitle, style: textTheme.titleMedium),
+          const SizedBox(height: 1),
+          Text(
+            modeLabel,
+            style: textTheme.bodyMedium?.copyWith(
+              color: scheme.onSurfaceVariant,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -747,6 +715,15 @@ class _UnmountModulesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return const CardGroup(children: [_UnmountModulesRow()]);
+  }
+}
+
+class _UnmountModulesRow extends StatelessWidget {
+  const _UnmountModulesRow();
+
+  @override
+  Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
@@ -755,56 +732,47 @@ class _UnmountModulesCard extends StatelessWidget {
 
     return Semantics(
       enabled: false,
-      child: Material(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(24),
-        clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.unmountModules,
-                      style: textTheme.bodyLarge?.copyWith(color: foreground),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      l10n.unmountModulesSummary,
-                      style: textTheme.bodyMedium?.copyWith(color: secondary),
-                    ),
-                  ],
-                ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.unmountModules,
+                    style: textTheme.bodyLarge?.copyWith(color: foreground),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    l10n.unmountModulesSummary,
+                    style: textTheme.bodyMedium?.copyWith(color: secondary),
+                  ),
+                ],
               ),
-              const SizedBox(width: 16),
-              _CapsuleSwitch(
-                value: false,
-                enabled: false,
-                label: l10n.unmountModules,
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 16),
+            _CapsuleSwitch(
+              value: false,
+              enabled: false,
+              label: l10n.unmountModules,
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _ConfigItem extends StatelessWidget {
-  const _ConfigItem({
-    required this.index,
-    required this.total,
+class _ConfigRow extends StatelessWidget {
+  const _ConfigRow({
     required this.icon,
     required this.title,
     required this.summary,
     required this.onTap,
   });
 
-  final int index;
-  final int total;
   final IconData icon;
   final String title;
   final String summary;
@@ -815,45 +783,25 @@ class _ConfigItem extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return ClipRRect(
-      borderRadius: groupShape(index, total),
-      child: Material(
-        color: scheme.surfaceContainerLow,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                Icon(icon, color: scheme.onSurfaceVariant),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: textTheme.bodyLarge),
-                      const SizedBox(height: 2),
-                      Text(
-                        summary,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.keyboard_arrow_right_rounded,
-                  color: scheme.onSurfaceVariant,
-                ),
-              ],
+    return ListRow(
+      icon: Icon(icon),
+      headline: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: textTheme.bodyLarge),
+          const SizedBox(height: 2),
+          Text(
+            summary,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.bodyMedium?.copyWith(
+              color: scheme.onSurfaceVariant,
             ),
           ),
-        ),
+        ],
       ),
+      trailing: const Icon(Icons.keyboard_arrow_right_rounded),
+      onTap: onTap,
     );
   }
 }
