@@ -10,6 +10,17 @@ enum AppThemeAccent {
   catppuccinGreen,
 }
 
+enum AppFontWeight {
+  light(300),
+  regular(400),
+  medium(500),
+  bold(700);
+
+  const AppFontWeight(this.value);
+
+  final int value;
+}
+
 class SettingsController extends ChangeNotifier {
   SettingsController._();
 
@@ -21,6 +32,7 @@ class SettingsController extends ChangeNotifier {
 
   AppThemeMode themeMode = AppThemeMode.system;
   AppThemeAccent themeAccent = AppThemeAccent.materialYou;
+  AppFontWeight fontWeight = AppFontWeight.regular;
   bool amoled = false;
   bool floatingNavBar = true;
   String language = 'system';
@@ -48,6 +60,7 @@ class SettingsController extends ChangeNotifier {
       if (values == null) return;
       themeMode = _themeModeFromIndex(values['themeMode']);
       themeAccent = _accentFromIndex(values['themeColor']);
+      fontWeight = _fontWeightFromIndex(values['fontWeight']);
       amoled = values['amoled'] == true;
       floatingNavBar = values['floatingNavBar'] != false;
       final savedLanguage = values['language']?.toString();
@@ -81,6 +94,13 @@ class SettingsController extends ChangeNotifier {
     amoled = value;
     notifyListeners();
     await _save('amoled_mode', value);
+  }
+
+  Future<void> setFontWeight(AppFontWeight value) async {
+    if (fontWeight == value) return;
+    fontWeight = value;
+    notifyListeners();
+    await _save('font_weight', value.index);
   }
 
   Future<void> setFloatingNavBar(bool value) async {
@@ -119,5 +139,12 @@ class SettingsController extends ChangeNotifier {
     return index >= 0 && index < AppThemeAccent.values.length
         ? AppThemeAccent.values[index]
         : AppThemeAccent.materialYou;
+  }
+
+  static AppFontWeight _fontWeightFromIndex(Object? value) {
+    final index = value is num ? value.toInt() : AppFontWeight.regular.index;
+    return index >= 0 && index < AppFontWeight.values.length
+        ? AppFontWeight.values[index]
+        : AppFontWeight.regular;
   }
 }

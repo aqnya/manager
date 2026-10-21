@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 abstract final class AppTheme {
   static const fontFamily = 'MI_Sans_Regular';
 
-  static ThemeData build(ColorScheme scheme) {
-    final textTheme = _buildTextTheme(scheme);
+  static ThemeData build(ColorScheme scheme, {int fontWeight = 400}) {
+    final textTheme = _applyFontWeight(_buildTextTheme(scheme), fontWeight);
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
@@ -90,6 +90,35 @@ abstract final class AppTheme {
         fontWeight: FontWeight.w500,
         letterSpacing: 0,
       ),
+    );
+  }
+
+  static TextTheme _applyFontWeight(TextTheme theme, int targetWeight) {
+    TextStyle? adjust(TextStyle? style) {
+      if (style == null) return null;
+      final current = style.fontWeight?.value ?? FontWeight.w400.value;
+      final adjusted = (current + targetWeight - 400).clamp(100, 900);
+      return style.copyWith(
+        fontWeight: FontWeight.values[(adjusted ~/ 100) - 1],
+      );
+    }
+
+    return theme.copyWith(
+      displayLarge: adjust(theme.displayLarge),
+      displayMedium: adjust(theme.displayMedium),
+      displaySmall: adjust(theme.displaySmall),
+      headlineLarge: adjust(theme.headlineLarge),
+      headlineMedium: adjust(theme.headlineMedium),
+      headlineSmall: adjust(theme.headlineSmall),
+      titleLarge: adjust(theme.titleLarge),
+      titleMedium: adjust(theme.titleMedium),
+      titleSmall: adjust(theme.titleSmall),
+      bodyLarge: adjust(theme.bodyLarge),
+      bodyMedium: adjust(theme.bodyMedium),
+      bodySmall: adjust(theme.bodySmall),
+      labelLarge: adjust(theme.labelLarge),
+      labelMedium: adjust(theme.labelMedium),
+      labelSmall: adjust(theme.labelSmall),
     );
   }
 }

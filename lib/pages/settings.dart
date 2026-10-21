@@ -116,6 +116,36 @@ class SettingsPage extends StatelessWidget {
                             trailing: const Icon(Icons.chevron_right_rounded),
                           ),
                         ),
+                        _SettingsChoice<AppFontWeight>(
+                          value: settings.fontWeight,
+                          choices: [
+                            _SettingsChoiceValue(
+                              AppFontWeight.light,
+                              l10n.fontWeightLight,
+                            ),
+                            _SettingsChoiceValue(
+                              AppFontWeight.regular,
+                              l10n.fontWeightRegular,
+                            ),
+                            _SettingsChoiceValue(
+                              AppFontWeight.medium,
+                              l10n.fontWeightMedium,
+                            ),
+                            _SettingsChoiceValue(
+                              AppFontWeight.bold,
+                              l10n.fontWeightBold,
+                            ),
+                          ],
+                          onChanged: settings.setFontWeight,
+                          child: ListRow(
+                            icon: const Icon(Icons.format_size_rounded),
+                            headline: Text(l10n.settingsFontWeight),
+                            supporting: Text(
+                              _fontWeightLabel(settings.fontWeight, l10n),
+                            ),
+                            trailing: const Icon(Icons.chevron_right_rounded),
+                          ),
+                        ),
                         ListRow(
                           icon: const Icon(Icons.phone_android_rounded),
                           headline: Text(l10n.settingsAmoled),
@@ -196,6 +226,18 @@ class SettingsPage extends StatelessWidget {
       AppThemeAccent.catppuccinBlue => l10n.themeColorBlue,
       AppThemeAccent.catppuccinLavender => l10n.themeColorLavender,
       AppThemeAccent.catppuccinGreen => l10n.themeColorGreen,
+    };
+  }
+
+  static String _fontWeightLabel(
+    AppFontWeight fontWeight,
+    AppLocalizations l10n,
+  ) {
+    return switch (fontWeight) {
+      AppFontWeight.light => l10n.fontWeightLight,
+      AppFontWeight.regular => l10n.fontWeightRegular,
+      AppFontWeight.medium => l10n.fontWeightMedium,
+      AppFontWeight.bold => l10n.fontWeightBold,
     };
   }
 

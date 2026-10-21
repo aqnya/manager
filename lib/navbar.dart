@@ -143,7 +143,7 @@ class _TabItem extends StatelessWidget {
         ? scheme.onPrimaryContainer
         : scheme.onSurfaceVariant;
     final labelStyle = Theme.of(context).textTheme.labelMedium
-        ?.copyWith(color: contentColor, fontWeight: FontWeight.w500);
+        ?.copyWith(color: contentColor);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,

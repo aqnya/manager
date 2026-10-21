@@ -266,6 +266,14 @@
   "themeColorBlue": "Catppuccin Blue",
   "themeColorLavender": "Catppuccin Lavender",
   "themeColorGreen": "Catppuccin Green",
+  "settingsFontWeight": "Font weight",
+  "@settingsFontWeight": {
+    "description": "Settings item for adjusting the app font weight"
+  },
+  "fontWeightLight": "Light",
+  "fontWeightRegular": "Regular",
+  "fontWeightMedium": "Medium",
+  "fontWeightBold": "Bold",
   "settingsAmoled": "AMOLED black",
   "settingsAmoledSummary": "Use a pure black background in dark mode",
   "settingsFloatingNavBar": "Floating navigation bar",

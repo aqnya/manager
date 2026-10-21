@@ -57,6 +57,7 @@ class _ColorTile extends StatelessWidget {
         '#${color.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}';
     final luminance = color.computeLuminance();
     final textColor = luminance > 0.5 ? Colors.black : Colors.white;
+    final textTheme = Theme.of(context).textTheme;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -68,11 +69,8 @@ class _ColorTile extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            name,
-            style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
-          ),
-          Text(hex, style: TextStyle(color: textColor)),
+          Text(name, style: textTheme.labelLarge?.copyWith(color: textColor)),
+          Text(hex, style: textTheme.bodySmall?.copyWith(color: textColor)),
         ],
       ),
     );

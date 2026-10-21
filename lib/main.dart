@@ -77,8 +77,14 @@ class _MyAppState extends State<MyApp> {
           ],
           supportedLocales: const [Locale('en', ''), Locale('zh', '')],
           locale: settings.locale,
-          theme: AppTheme.build(lightScheme),
-          darkTheme: AppTheme.build(darkScheme),
+          theme: AppTheme.build(
+            lightScheme,
+            fontWeight: settings.fontWeight.value,
+          ),
+          darkTheme: AppTheme.build(
+            darkScheme,
+            fontWeight: settings.fontWeight.value,
+          ),
           themeMode: settings.flutterThemeMode,
           home: const MyHomePage(),
         );

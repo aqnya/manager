@@ -173,7 +173,6 @@ class _StatusCard extends StatelessWidget {
                         title,
                         style: textTheme.titleMedium?.copyWith(
                           color: contentColor,
-                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 3),
@@ -222,8 +221,7 @@ class _ModeLabel extends StatelessWidget {
       child: Text(
         label,
         maxLines: 1,
-        style: Theme.of(context).textTheme.labelMedium
-            ?.copyWith(color: color, fontWeight: FontWeight.w500),
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(color: color),
       ),
     );
   }

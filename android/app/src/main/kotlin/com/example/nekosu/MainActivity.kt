@@ -78,6 +78,7 @@ class MainActivity : FlutterActivity() {
                         mapOf(
                             "themeMode" to prefs.getInt("theme_mode", 0),
                             "themeColor" to prefs.getInt("theme_color", 0),
+                            "fontWeight" to prefs.getInt("font_weight", 1),
                             "amoled" to prefs.getBoolean("amoled_mode", false),
                             "floatingNavBar" to prefs.getBoolean("floating_navbar", true),
                             "language" to prefs.getString("language", "system"),
