@@ -393,7 +393,7 @@ class _AboutItem extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l10n.aboutCardTitle, style: textTheme.titleMedium),
+                    Text(l10n.aboutCardTitle, style: textTheme.titleSmall),
                     const SizedBox(height: 2),
                     Text(
                       l10n.aboutCardDescription,
