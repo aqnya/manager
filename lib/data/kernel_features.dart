@@ -1,6 +1,6 @@
 import 'dart:isolate';
 
-import 'package:nekosu/ffi.dart';
+import 'package:nekosu/core/ncore_ffi.dart';
 
 class KernelFeatureInfo {
   const KernelFeatureInfo({

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nekosu/app_popup_menu.dart';
-import 'package:nekosu/card_group.dart';
-import 'package:nekosu/kernel_features.dart';
+import 'package:nekosu/core/log_export.dart';
+import 'package:nekosu/core/settings_controller.dart';
+import 'package:nekosu/data/kernel_features.dart';
+import 'package:nekosu/features/about/about_page.dart';
+import 'package:nekosu/features/settings/display_mode_page.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
-import 'package:nekosu/layout_insets.dart';
-import 'package:nekosu/log_export.dart';
-import 'package:nekosu/pages/about.dart';
-import 'package:nekosu/pages/display_mode.dart';
-import 'package:nekosu/settings_controller.dart';
+import 'package:nekosu/shared/layout_insets.dart';
+import 'package:nekosu/shared/widgets/app_popup_menu.dart';
+import 'package:nekosu/shared/widgets/card_group.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});

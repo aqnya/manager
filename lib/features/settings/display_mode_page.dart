@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
-import 'package:nekosu/card_group.dart';
-import 'package:nekosu/display_mode_controller.dart';
+import 'package:nekosu/core/display_mode_controller.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
+import 'package:nekosu/shared/widgets/card_group.dart';
 
 class DisplayModePage extends StatefulWidget {
   const DisplayModePage({super.key});

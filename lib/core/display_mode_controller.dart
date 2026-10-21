@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
-import 'package:nekosu/settings_controller.dart';
+import 'package:nekosu/core/settings_controller.dart';
 
 abstract final class DisplayModeController {
   static const defaultRefreshRate = 120.0;

@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nekosu/app_popup_menu.dart';
+import 'package:nekosu/data/modules.dart';
+import 'package:nekosu/features/modules/webui_page.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
-import 'package:nekosu/layout_insets.dart';
-import 'package:nekosu/modules.dart';
-import 'package:nekosu/pages/webui.dart';
+import 'package:nekosu/shared/layout_insets.dart';
+import 'package:nekosu/shared/widgets/app_popup_menu.dart';
 
 class ModulesPage extends StatefulWidget {
   const ModulesPage({super.key});

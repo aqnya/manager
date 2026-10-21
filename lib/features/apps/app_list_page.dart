@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:nekosu/app_icon.dart';
-import 'package:nekosu/app_popup_menu.dart';
-import 'package:nekosu/apps.dart';
-import 'package:nekosu/card_group.dart';
-import 'package:nekosu/ffi.dart';
-import 'package:nekosu/layout_insets.dart';
+import 'package:nekosu/core/ncore_ffi.dart';
+import 'package:nekosu/data/apps.dart';
+import 'package:nekosu/features/apps/app_detail_page.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
-import 'package:nekosu/pages/app_detail.dart';
+import 'package:nekosu/shared/layout_insets.dart';
+import 'package:nekosu/shared/widgets/app_icon.dart';
+import 'package:nekosu/shared/widgets/app_popup_menu.dart';
+import 'package:nekosu/shared/widgets/card_group.dart';
 
 class AppListPage extends StatefulWidget {
   const AppListPage({super.key});

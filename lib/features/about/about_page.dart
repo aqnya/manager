@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:nekosu/card_group.dart';
-import 'package:nekosu/ffi.dart';
+import 'package:nekosu/core/ncore_ffi.dart';
+import 'package:nekosu/core/settings_controller.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
-import 'package:nekosu/settings_controller.dart';
+import 'package:nekosu/shared/widgets/card_group.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 

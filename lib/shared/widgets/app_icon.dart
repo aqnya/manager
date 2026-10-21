@@ -2,7 +2,7 @@ import 'dart:collection';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:nekosu/apps.dart';
+import 'package:nekosu/data/apps.dart';
 
 class AppIconCache {
   AppIconCache._();

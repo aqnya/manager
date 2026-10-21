@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:flutter/services.dart';
-import 'package:nekosu/ffi.dart';
+import 'package:nekosu/core/ncore_ffi.dart';
 
 class ModuleInfo {
   const ModuleInfo({

@@ -5,9 +5,9 @@ import 'dart:isolate';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nekosu/ffi.dart';
+import 'package:nekosu/core/ncore_ffi.dart';
+import 'package:nekosu/data/modules.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
-import 'package:nekosu/modules.dart';
 
 const _webUiViewType = 'nekosu/webui';
 const _webUiChannelPrefix = 'nekosu/webui/';

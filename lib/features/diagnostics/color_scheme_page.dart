@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 
-class ColorPage extends StatelessWidget {
-  const ColorPage({super.key});
+class ColorSchemeDiagnosticsPage extends StatelessWidget {
+  const ColorSchemeDiagnosticsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
