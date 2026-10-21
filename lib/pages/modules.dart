@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nekosu/haze_app_bar.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:nekosu/layout_insets.dart';
 import 'package:nekosu/modules.dart';
@@ -248,7 +247,12 @@ class _ModulesPageState extends State<ModulesPage> {
           backgroundColor: scheme.surfaceContainer,
           body: CustomScrollView(
             slivers: [
-              HazeSliverAppBar(
+              SliverAppBar(
+                pinned: true,
+                backgroundColor: scheme.surfaceContainer,
+                surfaceTintColor: Colors.transparent,
+                scrolledUnderElevation: 0,
+                elevation: 0,
                 title: Text(_logHeader(l10n)),
                 leading: _logRunning
                     ? null
@@ -294,7 +298,12 @@ class _ModulesPageState extends State<ModulesPage> {
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            HazeSliverAppBar(
+            SliverAppBar(
+              pinned: true,
+              backgroundColor: scheme.surfaceContainer,
+              surfaceTintColor: Colors.transparent,
+              scrolledUnderElevation: 0,
+              elevation: 0,
               title: Text(l10n.modulesLabel),
               actions: [
                 IconButton(

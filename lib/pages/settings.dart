@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nekosu/card_group.dart';
 import 'package:nekosu/ffi.dart';
-import 'package:nekosu/haze_app_bar.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:nekosu/layout_insets.dart';
 import 'package:nekosu/settings_controller.dart';
@@ -14,6 +13,7 @@ class SettingsPage extends StatelessWidget {
     return AnimatedBuilder(
       animation: SettingsController.instance,
       builder: (context, _) {
+        final scheme = Theme.of(context).colorScheme;
         final l10n = AppLocalizations.of(context)!;
         final settings = SettingsController.instance;
         final navBarClearance = floatingNavBarClearance(context);
@@ -21,7 +21,14 @@ class SettingsPage extends StatelessWidget {
         return Scaffold(
           body: CustomScrollView(
             slivers: [
-              HazeSliverAppBar(title: Text(l10n.settingsLabel)),
+              SliverAppBar(
+                pinned: true,
+                title: Text(l10n.settingsLabel),
+                backgroundColor: scheme.surfaceContainer,
+                surfaceTintColor: Colors.transparent,
+                scrolledUnderElevation: 0,
+                elevation: 0,
+              ),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(0, 12, 0, navBarClearance),
                 sliver: SliverList(

@@ -4,7 +4,6 @@ import 'package:nekosu/app_icon.dart';
 import 'package:nekosu/apps.dart';
 import 'package:nekosu/card_group.dart';
 import 'package:nekosu/ffi.dart';
-import 'package:nekosu/haze_app_bar.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 
 class AppDetailPage extends StatefulWidget {
@@ -165,7 +164,12 @@ class _AppDetailPageState extends State<AppDetailPage> {
       backgroundColor: scheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
-          HazeSliverAppBar(
+          SliverAppBar(
+            pinned: true,
+            backgroundColor: scheme.surfaceContainer,
+            surfaceTintColor: Colors.transparent,
+            scrolledUnderElevation: 0,
+            elevation: 0,
             title: Text(l10n.appProfileTitle),
             leading: const BackButton(),
           ),

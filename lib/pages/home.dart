@@ -4,7 +4,6 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:nekosu/card_group.dart';
 import 'package:nekosu/ffi.dart';
-import 'package:nekosu/haze_app_bar.dart';
 import 'package:nekosu/layout_insets.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 
@@ -64,7 +63,14 @@ class _HomeScreenContent extends StatelessWidget {
       backgroundColor: scheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
-          HazeSliverAppBar(title: Text(l10n.appTitle)),
+          SliverAppBar(
+            pinned: true,
+            title: Text(l10n.appTitle),
+            backgroundColor: scheme.surfaceContainer,
+            surfaceTintColor: Colors.transparent,
+            scrolledUnderElevation: 0,
+            elevation: 0,
+          ),
           SliverPadding(
             padding: EdgeInsets.fromLTRB(16, 12, 16, navBarClearance),
             sliver: SliverToBoxAdapter(
