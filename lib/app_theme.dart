@@ -1,3 +1,5 @@
+import 'dart:ui' show FontVariation;
+
 import 'package:flutter/material.dart';
 
 abstract final class AppTheme {
@@ -97,9 +99,10 @@ abstract final class AppTheme {
     TextStyle? adjust(TextStyle? style) {
       if (style == null) return null;
       final current = style.fontWeight?.value ?? FontWeight.w400.value;
-      final adjusted = (current + targetWeight - 400).clamp(100, 900);
+      final adjusted = (current + targetWeight - 400).clamp(300, 700);
       return style.copyWith(
         fontWeight: FontWeight.values[(adjusted ~/ 100) - 1],
+        fontVariations: [FontVariation('wght', adjusted.toDouble())],
       );
     }
 
