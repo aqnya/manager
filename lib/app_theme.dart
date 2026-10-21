@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppTheme {
-  static const _fontFamily = 'sans-serif';
+  static const fontFamily = 'MI_Sans_Regular';
 
   static ThemeData build(ColorScheme scheme) {
     final textTheme = _buildTextTheme(scheme);
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
+      fontFamily: fontFamily,
       textTheme: textTheme,
       scaffoldBackgroundColor: scheme.surfaceContainer,
       appBarTheme: AppBarTheme(
@@ -23,7 +24,7 @@ abstract final class AppTheme {
   static TextTheme _buildTextTheme(ColorScheme scheme) {
     final base = Typography.material2021(platform: TargetPlatform.android).black
         .apply(
-          fontFamily: _fontFamily,
+          fontFamily: fontFamily,
           bodyColor: scheme.onSurface,
           displayColor: scheme.onSurface,
         );
