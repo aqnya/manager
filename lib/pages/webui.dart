@@ -180,6 +180,9 @@ class _WebUiPageState extends State<WebUiPage> {
   _WebUiServer? _server;
   Uri? _entryUri;
 
+  bool _viewSized = false;
+  bool _initialLoadScheduled = false;
+  bool _initialLoadStarted = false;
   bool _loading = true;
   double? _progress;
   String? _error;
@@ -255,11 +258,28 @@ class _WebUiPageState extends State<WebUiPage> {
         ].join(' '),
       );
       _entryUri = baseUri.resolve(entry.uri.pathSegments.last);
-      await _loadEntry();
+      _scheduleInitialLoad();
     } catch (error) {
       await server.close();
       _showError(error.toString());
     }
+  }
+
+  void _scheduleInitialLoad() {
+    if (!mounted ||
+        _entryUri == null ||
+        !_viewSized ||
+        _initialLoadScheduled ||
+        _initialLoadStarted) {
+      return;
+    }
+    _initialLoadScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initialLoadScheduled = false;
+      if (!mounted || _initialLoadStarted || _entryUri == null) return;
+      _initialLoadStarted = true;
+      unawaited(_loadEntry());
+    });
   }
 
   Future<void> _loadEntry() async {
@@ -563,6 +583,20 @@ class _WebUiPageState extends State<WebUiPage> {
     return null;
   }
 
+  Widget _buildWebView() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (!_viewSized &&
+            constraints.maxWidth > 0 &&
+            constraints.maxHeight > 0) {
+          _viewSized = true;
+          _scheduleInitialLoad();
+        }
+        return WebViewWidget(controller: _controller);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -580,7 +614,7 @@ class _WebUiPageState extends State<WebUiPage> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              WebViewWidget(controller: _controller),
+              _buildWebView(),
               if (_loading && _error == null)
                 Align(
                   alignment: Alignment.topCenter,
