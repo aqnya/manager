@@ -17,7 +17,7 @@ dependencies:
   dynamic_color: ^2.1.0
   ffi: ^2.2.0
   device_info_plus: ^13.1.0
-  settings_ui: ^3.0.1
+  settings_ui: ^4.0.0
 
 dev_dependencies:
   flutter_test:
