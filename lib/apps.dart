@@ -9,6 +9,8 @@ class AppInfo {
     required this.uid,
     required this.isSystem,
     required this.isLaunchable,
+    this.versionName = '',
+    this.versionCode = 0,
   });
 
   final String name;
@@ -16,6 +18,8 @@ class AppInfo {
   final int uid;
   final bool isSystem;
   final bool isLaunchable;
+  final String versionName;
+  final int versionCode;
 
   factory AppInfo.fromMap(Map<Object?, Object?> map) {
     return AppInfo(
@@ -24,6 +28,8 @@ class AppInfo {
       uid: map['uid'] as int? ?? -1,
       isSystem: map['isSystem'] as bool? ?? false,
       isLaunchable: map['isLaunchable'] as bool? ?? false,
+      versionName: map['versionName'] as String? ?? '',
+      versionCode: map['versionCode'] as int? ?? 0,
     );
   }
 }

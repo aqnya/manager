@@ -174,6 +174,8 @@ class MainActivity : FlutterActivity() {
                     "uid" to info.uid,
                     "isSystem" to ((info.flags and ApplicationInfo.FLAG_SYSTEM) != 0),
                     "isLaunchable" to launchable.contains(pkg.packageName),
+                    "versionName" to (pkg.versionName ?: ""),
+                    "versionCode" to pkg.longVersionCode,
                 )
         }
         return apps

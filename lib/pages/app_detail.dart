@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nekosu/app_icon.dart';
+import 'package:nekosu/app_popup_menu.dart';
 import 'package:nekosu/apps.dart';
 import 'package:nekosu/card_group.dart';
 import 'package:nekosu/ffi.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
+
+enum _ProfileMode { defaults, custom }
+
+enum _ProfileMenuAction { copyPackageName, resetProfile }
 
 class AppDetailPage extends StatefulWidget {
   const AppDetailPage({super.key, required this.app, this.config});
@@ -22,6 +27,7 @@ class _AppDetailPageState extends State<AppDetailPage> {
   late Set<int> _caps;
   late String _domain;
   late NksuNamespace _namespace;
+  late _ProfileMode _mode;
   bool _saveErrorShown = false;
 
   @override
@@ -33,7 +39,15 @@ class _AppDetailPageState extends State<AppDetailPage> {
     _caps = config?.caps.toSet() ?? {...defaultCaps};
     _domain = config?.selinuxDomain ?? defaultSelinuxDomain;
     _namespace = config?.namespace ?? NksuNamespace.inherited;
+    _mode = _isDefaultProfile ? _ProfileMode.defaults : _ProfileMode.custom;
   }
+
+  bool get _isDefaultProfile =>
+      _rootUid == 0 &&
+      _caps.length == defaultCaps.length &&
+      _caps.containsAll(defaultCaps) &&
+      _domain == defaultSelinuxDomain &&
+      _namespace == NksuNamespace.inherited;
 
   void _persist() {
     final success = _allowed
@@ -66,12 +80,81 @@ class _AppDetailPageState extends State<AppDetailPage> {
         if (_caps.isEmpty) _caps = {...defaultCaps};
         if (_domain.trim().isEmpty) _domain = defaultSelinuxDomain;
       } else {
+        _rootUid = 0;
         _caps = <int>{};
         _domain = defaultSelinuxDomain;
         _namespace = NksuNamespace.inherited;
+        _mode = _ProfileMode.defaults;
       }
     });
     _persist();
+  }
+
+  void _selectProfileMode(_ProfileMode mode) {
+    if (_mode == mode) return;
+    setState(() {
+      _mode = mode;
+      if (mode == _ProfileMode.defaults) {
+        _rootUid = 0;
+        _caps = {...defaultCaps};
+        _domain = defaultSelinuxDomain;
+        _namespace = NksuNamespace.inherited;
+      } else if (_caps.isEmpty) {
+        _caps = {...defaultCaps};
+      }
+    });
+    _persist();
+  }
+
+  Future<void> _copyPackageName() async {
+    await Clipboard.setData(ClipboardData(text: widget.app.packageName));
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l10n.packageNameCopied)));
+  }
+
+  Future<void> _confirmResetProfile() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.resetProfileConfirmTitle),
+        content: Text(l10n.resetProfileConfirmMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.dialogCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.resetProfile),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() {
+      _allowed = false;
+      _rootUid = 0;
+      _caps = {...defaultCaps};
+      _domain = defaultSelinuxDomain;
+      _namespace = NksuNamespace.inherited;
+      _mode = _ProfileMode.defaults;
+    });
+    _persist();
+  }
+
+  void _onProfileMenuSelected(_ProfileMenuAction action) {
+    switch (action) {
+      case _ProfileMenuAction.copyPackageName:
+        _copyPackageName();
+        break;
+      case _ProfileMenuAction.resetProfile:
+        _confirmResetProfile();
+        break;
+    }
   }
 
   Future<void> _editRootUid() async {
@@ -158,105 +241,149 @@ class _AppDetailPageState extends State<AppDetailPage> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
 
     return Scaffold(
       backgroundColor: scheme.surfaceContainer,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            pinned: true,
-            backgroundColor: scheme.surfaceContainer,
-            surfaceTintColor: Colors.transparent,
-            scrolledUnderElevation: 0,
-            elevation: 0,
-            title: Text(l10n.appProfileTitle),
-            leading: const BackButton(),
-          ),
-          SliverPadding(
-            padding: EdgeInsets.fromLTRB(
-              16,
-              8,
-              16,
-              32 + MediaQuery.viewPaddingOf(context).bottom,
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(16, 12, 16, 32 + bottomInset),
+          children: [
+            _ProfileToolbar(onMenuSelected: _onProfileMenuSelected),
+            const SizedBox(height: 18),
+            Text(
+              l10n.appProfileTitle,
+              style: textTheme.headlineLarge?.copyWith(color: scheme.onSurface),
             ),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _AppIdentityHeader(app: widget.app),
-                  const SizedBox(height: 24),
-                  _SectionTitle(text: l10n.accessPermissions),
-                  const SizedBox(height: 8),
-                  _AuthorizationCard(
-                    allowed: _allowed,
-                    onChanged: _toggleAllowed,
-                  ),
-                  AnimatedSize(
-                    duration: const Duration(milliseconds: 260),
-                    curve: Curves.easeOutCubic,
-                    alignment: Alignment.topCenter,
-                    child: _allowed
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              const SizedBox(height: 24),
-                              _SectionTitle(text: l10n.rootConfiguration),
-                              const SizedBox(height: 8),
-                              _ConfigItem(
-                                index: 0,
-                                total: 4,
-                                icon: Icons.badge_outlined,
-                                title: l10n.rootUid,
-                                summary: '$_rootUid',
-                                onTap: _editRootUid,
-                              ),
-                              const SizedBox(height: 2),
-                              _ConfigItem(
-                                index: 1,
-                                total: 4,
-                                icon: Icons.tune_rounded,
-                                title: l10n.capabilities,
-                                summary: l10n.capabilitiesSelected(
-                                  _caps.length,
-                                  linuxCaps.length,
-                                ),
-                                onTap: _editCaps,
-                              ),
-                              const SizedBox(height: 2),
-                              _ConfigItem(
-                                index: 2,
-                                total: 4,
-                                icon: Icons.shield_outlined,
-                                title: l10n.selinuxDomain,
-                                summary: _domain,
-                                onTap: _editDomain,
-                              ),
-                              const SizedBox(height: 2),
-                              _ConfigItem(
-                                index: 3,
-                                total: 4,
-                                icon: Icons.layers_outlined,
-                                title: l10n.mountNamespace,
-                                summary: _namespaceLabel(l10n, _namespace),
-                                onTap: _editNamespace,
-                              ),
-                            ],
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ],
-              ),
+            const SizedBox(height: 18),
+            _AppIdentityCard(app: widget.app),
+            const SizedBox(height: 4),
+            _AuthorizationCard(allowed: _allowed, onChanged: _toggleAllowed),
+            const SizedBox(height: 4),
+            _ProfileSummaryCard(mode: _mode),
+            const SizedBox(height: 12),
+            _ProfileModeSelector(mode: _mode, onSelected: _selectProfileMode),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 260),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
+              child: _mode == _ProfileMode.custom
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _SectionTitle(text: l10n.rootConfiguration),
+                          const SizedBox(height: 8),
+                          _ConfigItem(
+                            index: 0,
+                            total: 4,
+                            icon: Icons.badge_outlined,
+                            title: l10n.rootUid,
+                            summary: '$_rootUid',
+                            onTap: _editRootUid,
+                          ),
+                          const SizedBox(height: 2),
+                          _ConfigItem(
+                            index: 1,
+                            total: 4,
+                            icon: Icons.tune_rounded,
+                            title: l10n.capabilities,
+                            summary: l10n.capabilitiesSelected(
+                              _caps.length,
+                              linuxCaps.length,
+                            ),
+                            onTap: _editCaps,
+                          ),
+                          const SizedBox(height: 2),
+                          _ConfigItem(
+                            index: 2,
+                            total: 4,
+                            icon: Icons.shield_outlined,
+                            title: l10n.selinuxDomain,
+                            summary: _domain,
+                            onTap: _editDomain,
+                          ),
+                          const SizedBox(height: 2),
+                          _ConfigItem(
+                            index: 3,
+                            total: 4,
+                            icon: Icons.layers_outlined,
+                            title: l10n.mountNamespace,
+                            summary: _namespaceLabel(l10n, _namespace),
+                            onTap: _editNamespace,
+                          ),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ),
-          ),
-        ],
+            const SizedBox(height: 18),
+            const _UnmountModulesCard(),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _AppIdentityHeader extends StatelessWidget {
-  const _AppIdentityHeader({required this.app});
+class _ProfileToolbar extends StatelessWidget {
+  const _ProfileToolbar({required this.onMenuSelected});
+
+  final ValueChanged<_ProfileMenuAction> onMenuSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final localizations = MaterialLocalizations.of(context);
+
+    return Row(
+      children: [
+        Material(
+          color: scheme.surfaceContainerHigh,
+          shape: const CircleBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: SizedBox.square(
+            dimension: 40,
+            child: IconButton(
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const Icon(Icons.arrow_back_rounded),
+              iconSize: 22,
+              tooltip: localizations.backButtonTooltip,
+            ),
+          ),
+        ),
+        const Spacer(),
+        AppPopupMenu<_ProfileMenuAction>(
+          icon: Icons.more_vert_rounded,
+          tooltip: localizations.showMenuTooltip,
+          onSelected: onMenuSelected,
+          items: [
+            AppPopupMenuItem(
+              value: _ProfileMenuAction.copyPackageName,
+              label: l10n.copyPackageName,
+              icon: Icons.content_copy_rounded,
+            ),
+            AppPopupMenuItem(
+              value: _ProfileMenuAction.resetProfile,
+              label: l10n.resetProfile,
+              icon: Icons.restart_alt_rounded,
+              destructive: true,
+              dividerBefore: true,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _AppIdentityCard extends StatelessWidget {
+  const _AppIdentityCard({required this.app});
 
   final AppInfo app;
 
@@ -265,63 +392,75 @@ class _AppIdentityHeader extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
+    final version = _appVersionLabel(app);
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(22),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: AppIcon(packageName: app.packageName, size: 60),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                app.name,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                app.packageName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Row(
+    return Material(
+      color: scheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(24),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            AppIcon(packageName: app.packageName, size: 40),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l10n.uidLabel(app.uid),
-                    style: textTheme.labelMedium?.copyWith(
+                    app.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.titleMedium,
+                  ),
+                  if (version.isNotEmpty) ...[
+                    const SizedBox(height: 1),
+                    Text(
+                      version,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 1),
+                  Text(
+                    app.packageName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.bodySmall?.copyWith(
                       color: scheme.onSurfaceVariant,
                     ),
                   ),
-                  if (app.isSystem) ...[
-                    const SizedBox(width: 8),
-                    _ModeLabel(
-                      label: l10n.tagSystem,
-                      foreground: scheme.onTertiaryContainer,
-                      background: scheme.tertiaryContainer,
-                    ),
-                  ],
                 ],
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                _ModeLabel(
+                  label: l10n.uidLabel(app.uid),
+                  foreground: scheme.onSecondaryContainer,
+                  background: scheme.secondaryContainer,
+                ),
+                if (app.isSystem) ...[
+                  const SizedBox(height: 6),
+                  _ModeLabel(
+                    label: l10n.tagSystem,
+                    foreground: scheme.onTertiaryContainer,
+                    background: scheme.tertiaryContainer,
+                  ),
+                ],
+              ],
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -339,53 +478,313 @@ class _AuthorizationCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Material(
-      color: scheme.surfaceBright,
+      color: scheme.surfaceContainerLow,
       borderRadius: BorderRadius.circular(24),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => onChanged(!allowed),
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: scheme.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 220),
-                  transitionBuilder: (child, animation) => ScaleTransition(
-                    scale: animation,
-                    child: FadeTransition(opacity: animation, child: child),
+              Icon(
+                Icons.shield_rounded,
+                size: 28,
+                color: allowed ? scheme.primary : scheme.onSurface,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(l10n.superuser, style: textTheme.titleMedium),
+              ),
+              const SizedBox(width: 12),
+              _CapsuleSwitch(
+                value: allowed,
+                label: l10n.superuser,
+                onChanged: onChanged,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileSummaryCard extends StatelessWidget {
+  const _ProfileSummaryCard({required this.mode});
+
+  final _ProfileMode mode;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
+    final modeLabel = switch (mode) {
+      _ProfileMode.defaults => l10n.profileModeDefault,
+      _ProfileMode.custom => l10n.profileModeCustom,
+    };
+
+    return Material(
+      color: scheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(24),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          children: [
+            Icon(Icons.person_rounded, size: 28, color: scheme.onSurface),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l10n.appProfileTitle, style: textTheme.titleMedium),
+                  const SizedBox(height: 1),
+                  Text(
+                    modeLabel,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileModeSelector extends StatelessWidget {
+  const _ProfileModeSelector({required this.mode, required this.onSelected});
+
+  final _ProfileMode mode;
+  final ValueChanged<_ProfileMode> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
+      children: [
+        Expanded(
+          child: _ProfileModeSegment(
+            label: l10n.profileModeDefault,
+            selected: mode == _ProfileMode.defaults,
+            onTap: () => onSelected(_ProfileMode.defaults),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Tooltip(
+            message: l10n.profileTemplateUnavailable,
+            child: _ProfileModeSegment(
+              label: l10n.profileModeTemplate,
+              selected: false,
+              enabled: false,
+            ),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: _ProfileModeSegment(
+            label: l10n.profileModeCustom,
+            selected: mode == _ProfileMode.custom,
+            onTap: () => onSelected(_ProfileMode.custom),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileModeSegment extends StatelessWidget {
+  const _ProfileModeSegment({
+    required this.label,
+    required this.selected,
+    this.enabled = true,
+    this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final bool enabled;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final foreground = selected
+        ? scheme.onPrimary
+        : enabled
+        ? scheme.onSurface
+        : scheme.onSurface.withValues(alpha: 0.28);
+    final background = selected ? scheme.primary : scheme.surfaceContainerHigh;
+    final shape = BorderRadius.circular(999);
+
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      selected: selected,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        height: 36,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(color: background, borderRadius: shape),
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: enabled ? onTap : null,
+            child: Center(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelLarge?.copyWith(color: foreground),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CapsuleSwitch extends StatelessWidget {
+  const _CapsuleSwitch({
+    required this.value,
+    required this.label,
+    this.onChanged,
+    this.enabled = true,
+  });
+
+  final bool value;
+  final String label;
+  final ValueChanged<bool>? onChanged;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final canToggle = enabled && onChanged != null;
+    final onTap = canToggle ? () => onChanged!(!value) : null;
+    final trackColor = !enabled
+        ? scheme.surfaceContainerHighest
+        : value
+        ? scheme.primary
+        : scheme.surfaceContainerHigh;
+    final borderColor = !enabled
+        ? scheme.outline.withValues(alpha: 0.18)
+        : value
+        ? scheme.primary
+        : scheme.outline.withValues(alpha: 0.35);
+    final thumbColor = !enabled
+        ? scheme.surfaceContainerLow
+        : value
+        ? scheme.onPrimary
+        : scheme.surface;
+    final iconColor = value
+        ? scheme.primary
+        : enabled
+        ? scheme.onSurfaceVariant
+        : scheme.outline.withValues(alpha: 0.6);
+
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      toggled: value,
+      label: label,
+      onTap: onTap,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: SizedBox(
+          width: 56,
+          height: 30,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            decoration: BoxDecoration(
+              color: trackColor,
+              border: Border.all(color: borderColor, width: 1.5),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: AnimatedAlign(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 3),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOutCubic,
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: thumbColor,
+                    shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    allowed ? Icons.lock_open_rounded : Icons.lock_rounded,
-                    key: ValueKey(allowed),
-                    color: allowed ? scheme.primary : scheme.onSurfaceVariant,
+                    value ? Icons.check_rounded : Icons.close_rounded,
+                    size: 15,
+                    color: iconColor,
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _UnmountModulesCard extends StatelessWidget {
+  const _UnmountModulesCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
+    final foreground = scheme.onSurface.withValues(alpha: 0.4);
+    final secondary = scheme.onSurfaceVariant.withValues(alpha: 0.36);
+
+    return Semantics(
+      enabled: false,
+      child: Material(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(24),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l10n.allowRootAccess, style: textTheme.titleMedium),
-                    const SizedBox(height: 4),
                     Text(
-                      l10n.allowRootAccessSummary,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
+                      l10n.unmountModules,
+                      style: textTheme.bodyLarge?.copyWith(color: foreground),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.unmountModulesSummary,
+                      style: textTheme.bodyMedium?.copyWith(color: secondary),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
-              Switch(value: allowed, onChanged: onChanged),
+              const SizedBox(width: 16),
+              _CapsuleSwitch(
+                value: false,
+                enabled: false,
+                label: l10n.unmountModules,
+              ),
             ],
           ),
         ),
@@ -419,7 +818,7 @@ class _ConfigItem extends StatelessWidget {
     return ClipRRect(
       borderRadius: groupShape(index, total),
       child: Material(
-        color: scheme.surfaceBright,
+        color: scheme.surfaceContainerLow,
         child: InkWell(
           onTap: onTap,
           child: Padding(
@@ -791,7 +1190,7 @@ class _ModeLabel extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(50),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -811,6 +1210,15 @@ String _namespaceLabel(AppLocalizations l10n, NksuNamespace namespace) {
     NksuNamespace.individual => l10n.namespaceIndividualLabel,
     NksuNamespace.global => l10n.namespaceGlobalLabel,
   };
+}
+
+String _appVersionLabel(AppInfo app) {
+  if (app.versionName.isEmpty) {
+    return app.versionCode > 0 ? '${app.versionCode}' : '';
+  }
+  return app.versionCode > 0
+      ? '${app.versionName} (${app.versionCode})'
+      : app.versionName;
 }
 
 String _namespaceDescription(AppLocalizations l10n, NksuNamespace namespace) {
