@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
@@ -57,8 +56,8 @@ abstract final class DisplayModeController {
     final candidates = sameResolution.isEmpty ? available : sameResolution;
     return candidates.reduce(
       (a, b) =>
-          abs(a.refreshRate - defaultRefreshRate) <=
-              abs(b.refreshRate - defaultRefreshRate)
+          (a.refreshRate - defaultRefreshRate).abs() <=
+              (b.refreshRate - defaultRefreshRate).abs()
           ? a
           : b,
     );
