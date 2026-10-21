@@ -246,7 +246,7 @@ class _WebUiPageState extends State<WebUiPage> {
       'onSurfaceVariant': scheme.onSurfaceVariant,
       'surfaceTint': scheme.surfaceTint,
       'inverseSurface': scheme.inverseSurface,
-      'inverseOnSurface': scheme.inverseOnSurface,
+      'inverseOnSurface': scheme.onInverseSurface,
       'error': scheme.error,
       'onError': scheme.onError,
       'errorContainer': scheme.errorContainer,
