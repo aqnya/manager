@@ -268,10 +268,10 @@ class _ModulesPageState extends State<ModulesPage> {
       backgroundColor: scheme.surfaceContainer,
       floatingActionButton: Padding(
         padding: EdgeInsets.only(bottom: navBarClearance),
-        child: FloatingActionButton.extended(
+        child: FloatingActionButton(
           onPressed: _installModule,
-          icon: const Icon(Icons.add_rounded),
-          label: Text(l10n.modulesInstall),
+          tooltip: l10n.modulesInstall,
+          child: const Icon(Icons.add_rounded),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -586,7 +586,6 @@ class _ModuleCardButton extends StatelessWidget {
       style: FilledButton.styleFrom(
         minimumSize: const Size(52, 36),
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        visualDensity: VisualDensity.compact,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         textStyle: textStyle,
         shape: const StadiumBorder(),
