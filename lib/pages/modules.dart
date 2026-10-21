@@ -773,7 +773,6 @@ class _ModuleLogPanelState extends State<_ModuleLogPanel> {
               child: SelectableText(
                 widget.text.isEmpty ? widget.waiting : widget.text,
                 style: textTheme.bodySmall?.copyWith(
-                  fontFamily: 'monospace',
                   height: 1.45,
                   color: scheme.onSurface,
                 ),

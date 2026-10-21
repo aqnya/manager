@@ -155,8 +155,7 @@ class SettingsPage extends StatelessWidget {
           '${l10n.managerVersion}: ${SettingsController.managerVersion}\n'
           '${l10n.kernelVersion}: ${kernel ?? l10n.unknownValue}\n'
           '${l10n.moduleVersion}: ${module ?? l10n.unknownValue}',
-          style: Theme.of(context).textTheme.bodySmall
-              ?.copyWith(fontFamily: 'monospace', height: 1.55),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.55),
         ),
       ],
     );

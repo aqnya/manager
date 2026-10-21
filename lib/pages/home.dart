@@ -309,7 +309,7 @@ class _DeviceInfoListState extends State<_DeviceInfoList> {
       _InfoEntry(label: l10n.kernelVersion, value: _kernelVersion),
       _InfoEntry(label: l10n.androidVersion, value: _androidVersion),
       _InfoEntry(label: l10n.deviceModel, value: _model),
-      _InfoEntry(label: l10n.fingerprint, value: _fingerprint, monospace: true),
+      _InfoEntry(label: l10n.fingerprint, value: _fingerprint),
     ];
 
     return _SegmentedList(entries: entries);
@@ -317,15 +317,10 @@ class _DeviceInfoListState extends State<_DeviceInfoList> {
 }
 
 class _InfoEntry {
-  const _InfoEntry({
-    required this.label,
-    required this.value,
-    this.monospace = false,
-  });
+  const _InfoEntry({required this.label, required this.value});
 
   final String label;
   final String value;
-  final bool monospace;
 }
 
 class _SegmentedList extends StatelessWidget {
@@ -357,14 +352,7 @@ class _SegmentedList extends StatelessWidget {
                   children: [
                     Text(entries[index].label, style: textTheme.bodyLarge),
                     const SizedBox(height: 2),
-                    Text(
-                      entries[index].value,
-                      style: textTheme.bodyMedium?.copyWith(
-                        fontFamily: entries[index].monospace
-                            ? 'monospace'
-                            : null,
-                      ),
-                    ),
+                    Text(entries[index].value, style: textTheme.bodyMedium),
                   ],
                 ),
               ),

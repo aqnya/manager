@@ -226,7 +226,6 @@ class _AppDetailPageState extends State<AppDetailPage> {
                                 icon: Icons.shield_outlined,
                                 title: l10n.selinuxDomain,
                                 summary: _domain,
-                                monospaceSummary: true,
                                 onTap: _editDomain,
                               ),
                               const SizedBox(height: 2),
@@ -294,7 +293,6 @@ class _AppIdentityHeader extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: textTheme.bodySmall?.copyWith(
                   color: scheme.onSurfaceVariant,
-                  fontFamily: 'monospace',
                 ),
               ),
               const SizedBox(height: 6),
@@ -400,7 +398,6 @@ class _ConfigItem extends StatelessWidget {
     required this.title,
     required this.summary,
     required this.onTap,
-    this.monospaceSummary = false,
   });
 
   final int index;
@@ -409,7 +406,6 @@ class _ConfigItem extends StatelessWidget {
   final String title;
   final String summary;
   final VoidCallback onTap;
-  final bool monospaceSummary;
 
   @override
   Widget build(BuildContext context) {
@@ -440,7 +436,6 @@ class _ConfigItem extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: textTheme.bodyMedium?.copyWith(
                           color: scheme.onSurfaceVariant,
-                          fontFamily: monospaceSummary ? 'monospace' : null,
                         ),
                       ),
                     ],
@@ -564,7 +559,6 @@ class _DomainDialogState extends State<_DomainDialog> {
         controller: _controller,
         autofocus: true,
         keyboardType: TextInputType.text,
-        style: const TextStyle(fontFamily: 'monospace'),
         decoration: InputDecoration(
           labelText: l10n.selinuxDomainInput,
           helperText: l10n.selinuxDomainDescription,
@@ -725,12 +719,7 @@ class _CapsSheetState extends State<_CapsSheet> {
                     });
                   },
                   controlAffinity: ListTileControlAffinity.leading,
-                  title: Text(
-                    'CAP_${cap.name}',
-                    style: textTheme.bodyMedium?.copyWith(
-                      fontFamily: 'monospace',
-                    ),
-                  ),
+                  title: Text('CAP_${cap.name}', style: textTheme.bodyMedium),
                   subtitle: Text(
                     _capDescription(l10n, cap.value),
                     maxLines: 2,
@@ -741,7 +730,6 @@ class _CapsSheetState extends State<_CapsSheet> {
                     '${cap.value}',
                     style: textTheme.labelSmall?.copyWith(
                       color: scheme.onSurfaceVariant,
-                      fontFamily: 'monospace',
                     ),
                   ),
                 );

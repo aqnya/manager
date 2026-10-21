@@ -72,10 +72,7 @@ class _ColorTile extends StatelessWidget {
             name,
             style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
           ),
-          Text(
-            hex,
-            style: TextStyle(color: textColor, fontFamily: 'monospace'),
-          ),
+          Text(hex, style: TextStyle(color: textColor)),
         ],
       ),
     );
