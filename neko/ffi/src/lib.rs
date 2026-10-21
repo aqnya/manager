@@ -14,11 +14,13 @@ const FMAC_MAX_DATA: usize = 64 * 1024;
 const FMAC_STACK_DATA: usize = 264;
 
 const FMAC_DATA_PROFILE: usize = 84;
+const FMAC_DATA_FEATURE: usize = 12;
 const FMAC_OFF_UID: usize = 0;
 const FMAC_OFF_CAPS: usize = 4;
 const FMAC_OFF_DOMAIN: usize = 12;
 const FMAC_OFF_NS: usize = 76;
 const FMAC_OFF_ROOT_UID: usize = 80;
+const FMAC_OFF_FEATURE_VALUE: usize = 4;
 
 const IOC_CMD: libc::c_int = 0xC008_4600u32 as libc::c_int;
 const IOC_DEL_UID: u32 = 4;
@@ -26,6 +28,9 @@ const IOC_HAS_UID: u32 = 5;
 const IOC_SET_PROFILE: u32 = 10;
 const IOC_GET_PROFILES: u32 = 13;
 const IOC_GET_VERSION: u32 = 14;
+const IOC_FEATURE_LIST: u32 = 15;
+const IOC_FEATURE_GET: u32 = 16;
+const IOC_FEATURE_SET: u32 = 17;
 
 const PR_GET_SHM_FD: libc::c_int = 201;
 const PR_GET_CTL_FD: libc::c_int = 203;
@@ -277,6 +282,61 @@ pub extern "C" fn ncore_kernel_release(buffer: *mut u8, capacity: usize) -> isiz
 pub extern "C" fn ncore_module_version(buffer: *mut u8, capacity: usize) -> isize {
     init_logging();
     copy_string(module_version(), buffer, capacity)
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn ncore_feature_list(buffer: *mut u8, capacity: usize) -> isize {
+    init_logging();
+    let Some(fd) = ensure_ctl_fd() else {
+        return -1;
+    };
+    let mut data = [0u8; 1024];
+    if ioc_call(fd, IOC_FEATURE_LIST, &mut data) < 0 {
+        return -1;
+    }
+    let end = data
+        .iter()
+        .position(|byte| *byte == 0)
+        .unwrap_or(data.len());
+    copy_string(
+        Some(String::from_utf8_lossy(&data[..end]).into_owned()),
+        buffer,
+        capacity,
+    )
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn ncore_feature_get(id: u32) -> i64 {
+    init_logging();
+    let Some(fd) = ensure_ctl_fd() else {
+        return -1;
+    };
+    let mut data = [0u8; FMAC_DATA_FEATURE];
+    data[..4].copy_from_slice(&id.to_ne_bytes());
+    if ioc_call(fd, IOC_FEATURE_GET, &mut data) < 0 {
+        return -1;
+    }
+    u64::from_ne_bytes(
+        data[FMAC_OFF_FEATURE_VALUE..FMAC_OFF_FEATURE_VALUE + 8]
+            .try_into()
+            .expect("feature value has a fixed width"),
+    ) as i64
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn ncore_feature_set(id: u32, value: u64) -> i32 {
+    init_logging();
+    let Some(fd) = ensure_ctl_fd() else {
+        return -1;
+    };
+    let mut data = [0u8; FMAC_DATA_FEATURE];
+    data[..4].copy_from_slice(&id.to_ne_bytes());
+    data[FMAC_OFF_FEATURE_VALUE..FMAC_OFF_FEATURE_VALUE + 8].copy_from_slice(&value.to_ne_bytes());
+    if ioc_call(fd, IOC_FEATURE_SET, &mut data) < 0 {
+        -1
+    } else {
+        0
+    }
 }
 
 #[unsafe(no_mangle)]

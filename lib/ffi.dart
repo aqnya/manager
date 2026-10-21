@@ -28,6 +28,10 @@ typedef _ProfileDart = int Function(
 );
 typedef _UidNative = Int32 Function(Int32 uid);
 typedef _UidDart = int Function(int uid);
+typedef _FeatureGetNative = Int64 Function(Uint32 id);
+typedef _FeatureGetDart = int Function(int id);
+typedef _FeatureSetNative = Int32 Function(Uint32 id, Uint64 value);
+typedef _FeatureSetDart = int Function(int id, int value);
 typedef _StringArgNative = IntPtr Function(
   Pointer<Uint8> value,
   Size valueLength,
@@ -71,6 +75,13 @@ class NcoreFfi {
   static final _StringDart? _moduleVersion = _lookupString(
     'ncore_module_version',
   );
+  static final _StringDart? _featureList = _lookupString('ncore_feature_list');
+  static final _FeatureGetDart? _featureGet = _lookupFeatureGet(
+    'ncore_feature_get',
+  );
+  static final _FeatureSetDart? _featureSet = _lookupFeatureSet(
+    'ncore_feature_set',
+  );
   static final _ProfileDart? _setProfile = _lookupProfile('ncore_set_profile');
   static final _UidDart? _deleteProfile = _lookupUid('ncore_del_uid');
   static final _UidDart? _hasProfile = _lookupUid('ncore_has_uid');
@@ -100,6 +111,8 @@ class NcoreFfi {
       _deleteProfile != null &&
       _hasProfile != null &&
       _listProfiles != null;
+  static final bool featureApiAvailable =
+      _featureList != null && _featureGet != null && _featureSet != null;
   static final bool moduleApiAvailable =
       _moduleList != null &&
       _moduleInstall != null &&
@@ -168,6 +181,26 @@ class NcoreFfi {
     }
   }
 
+  static _FeatureGetDart? _lookupFeatureGet(String name) {
+    final library = _library;
+    if (library == null) return null;
+    try {
+      return library.lookupFunction<_FeatureGetNative, _FeatureGetDart>(name);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static _FeatureSetDart? _lookupFeatureSet(String name) {
+    final library = _library;
+    if (library == null) return null;
+    try {
+      return library.lookupFunction<_FeatureSetNative, _FeatureSetDart>(name);
+    } catch (_) {
+      return null;
+    }
+  }
+
   static _StringArgDart? _lookupStringArg(String name) {
     final library = _library;
     if (library == null) return null;
@@ -215,6 +248,23 @@ class NcoreFfi {
   static String? get moduleVersion => _readString(_moduleVersion);
 
   static String? get profiles => _readString(_listProfiles);
+
+  static String? featureList() => _readString(_featureList);
+
+  static int? featureGet(int id) {
+    final function = _featureGet;
+    if (function == null || id < 0 || id > 0xffffffff) return null;
+    _ensureInitialized();
+    final value = function(id);
+    return value < 0 ? null : value;
+  }
+
+  static bool setFeature(int id, bool enabled) {
+    final function = _featureSet;
+    if (function == null || id < 0 || id > 0xffffffff) return false;
+    _ensureInitialized();
+    return function(id, enabled ? 1 : 0) == 0;
+  }
 
   static String? moduleList() => _readModuleString(_moduleList);
 

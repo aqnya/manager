@@ -4,10 +4,10 @@
  *
  * Upstream ksud carries boot patching, LKM late-loading, sulog, feature and
  * profile commands.  NekoSU does boot patching in bootpatcher, loads its LKM from
- * vendor_boot and drives profiles/features through the manager JNI, so only
- * the module runtime, su/resetprop entry points and daemon install remain.
+ * vendor_boot, so this CLI handles the module runtime, kernel feature queries,
+ * su/resetprop entry points and daemon installation.
  */
-use anyhow::{Ok, Result};
+use anyhow::{Ok, Result, bail};
 use clap::Parser;
 
 use android_logger::Config;
@@ -34,6 +34,12 @@ enum Commands {
     Sepolicy {
         #[command(subcommand)]
         command: Sepolicy,
+    },
+
+    /// Inspect and toggle kernel features
+    Feature {
+        #[command(subcommand)]
+        command: Feature,
     },
 
     /// Trigger `post-fs-data` event
@@ -66,6 +72,65 @@ enum Sepolicy {
 
     /// Check whether a rule is valid/supported without applying it
     Check { sepolicy: String },
+}
+
+#[derive(clap::Subcommand, Debug)]
+enum Feature {
+    /// List all features as "<id> <name> <value>" lines
+    List,
+
+    /// Print the current value of a feature by name or id
+    Get { feature: String },
+
+    /// Set a feature by name or id; value accepts 0/1, on/off, true/false
+    Set { feature: String, value: String },
+
+    /// Report unsupported, supported, or managed for module installation
+    Check { feature: String },
+}
+
+#[derive(Debug)]
+struct FeatureEntry {
+    id: u32,
+    name: String,
+}
+
+fn parse_features(text: &str) -> Vec<FeatureEntry> {
+    text.lines()
+        .filter_map(|line| {
+            let mut parts = line.split_whitespace();
+            let id = parts.next()?.parse().ok()?;
+            let name = parts.next()?.to_owned();
+            parts.next()?.parse::<u64>().ok()?;
+            Some(FeatureEntry { id, name })
+        })
+        .collect()
+}
+
+fn resolve_feature<'a>(features: &'a [FeatureEntry], query: &str) -> Option<&'a FeatureEntry> {
+    let id = query.parse::<u32>().ok();
+    features
+        .iter()
+        .find(|feature| feature.name == query || Some(feature.id) == id)
+}
+
+fn parse_feature_value(value: &str) -> Result<u64> {
+    match value {
+        "0" | "off" | "false" | "disable" => Ok(0),
+        "1" | "on" | "true" | "enable" => Ok(1),
+        _ => value
+            .parse::<u64>()
+            .map_err(|_| anyhow::anyhow!("invalid feature value: {value}")),
+    }
+}
+
+fn feature_check(query: &str) -> Result<&'static str> {
+    let features = parse_features(&ksucalls::feature_list()?);
+    let Some(feature) = resolve_feature(&features, query) else {
+        return Ok("unsupported");
+    };
+    let value = ksucalls::feature_get(feature.id)?;
+    Ok(if value == 0 { "supported" } else { "managed" })
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -143,6 +208,31 @@ pub fn run() -> Result<()> {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
             Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
+        },
+        Commands::Feature { command } => match command {
+            Feature::List => {
+                print!("{}", ksucalls::feature_list()?);
+                Ok(())
+            }
+            Feature::Get { feature } => {
+                let features = parse_features(&ksucalls::feature_list()?);
+                let Some(entry) = resolve_feature(&features, &feature) else {
+                    bail!("unknown kernel feature: {feature}");
+                };
+                println!("{}", ksucalls::feature_get(entry.id)?);
+                Ok(())
+            }
+            Feature::Set { feature, value } => {
+                let features = parse_features(&ksucalls::feature_list()?);
+                let Some(entry) = resolve_feature(&features, &feature) else {
+                    bail!("unknown kernel feature: {feature}");
+                };
+                ksucalls::feature_set(entry.id, parse_feature_value(&value)?)
+            }
+            Feature::Check { feature } => {
+                println!("{}", feature_check(&feature)?);
+                Ok(())
+            }
         },
         Commands::Module { command } => {
             utils::switch_mnt_ns(1)?;

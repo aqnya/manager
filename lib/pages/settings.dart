@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nekosu/app_popup_menu.dart';
 import 'package:nekosu/card_group.dart';
+import 'package:nekosu/kernel_features.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:nekosu/layout_insets.dart';
 import 'package:nekosu/log_export.dart';
@@ -179,6 +180,8 @@ class SettingsPage extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 20),
+                    const _KernelFeatureSection(),
+                    const SizedBox(height: 20),
                     _SettingsSection(
                       title: l10n.settingsAbout,
                       children: [
@@ -244,6 +247,110 @@ class SettingsPage extends StatelessWidget {
       _ => l10n.languageSystem,
     };
   }
+}
+
+class _KernelFeatureSection extends StatefulWidget {
+  const _KernelFeatureSection();
+
+  @override
+  State<_KernelFeatureSection> createState() => _KernelFeatureSectionState();
+}
+
+class _KernelFeatureSectionState extends State<_KernelFeatureSection> {
+  List<KernelFeatureInfo> _features = const [];
+  bool _loading = true;
+  bool _updating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final features = await KernelFeatureBridge.list();
+    if (!mounted) return;
+    setState(() {
+      if (features != null) _features = features;
+      _loading = false;
+    });
+  }
+
+  Future<void> _setEnabled(KernelFeatureInfo feature, bool enabled) async {
+    if (_updating) return;
+    setState(() => _updating = true);
+    final succeeded = await KernelFeatureBridge.setEnabled(feature.id, enabled);
+    if (!mounted) return;
+    if (succeeded) {
+      await _load();
+    } else {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.featureUpdateFailed)));
+    }
+    if (mounted) setState(() => _updating = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return _SettingsSection(
+      title: l10n.featuresTitle,
+      children: _features.isEmpty
+          ? [
+              ListRow(
+                icon: const Icon(Icons.tune_rounded),
+                headline: Text(l10n.featureEmpty),
+                supporting: Text(l10n.featureEmptyDescription),
+                trailing: _loading
+                    ? const SizedBox.square(
+                        dimension: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ]
+          : [
+              for (final feature in _features)
+                ListRow(
+                  icon: Icon(_featureIcon(feature.id)),
+                  headline: Text(_featureLabel(feature, l10n)),
+                  supporting: Text(_featureSummary(feature, l10n)),
+                  trailing: Switch(
+                    value: feature.enabled,
+                    onChanged: _updating
+                        ? null
+                        : (enabled) => _setEnabled(feature, enabled),
+                  ),
+                ),
+            ],
+    );
+  }
+}
+
+IconData _featureIcon(int id) {
+  return switch (id) {
+    KernelFeatureBridge.selinuxHide => Icons.security_rounded,
+    KernelFeatureBridge.umount => Icons.visibility_off_rounded,
+    _ => Icons.tune_rounded,
+  };
+}
+
+String _featureLabel(KernelFeatureInfo feature, AppLocalizations l10n) {
+  return switch (feature.id) {
+    KernelFeatureBridge.selinuxHide => l10n.featureSelinuxHide,
+    KernelFeatureBridge.umount => l10n.featureUmount,
+    _ => feature.name,
+  };
+}
+
+String _featureSummary(KernelFeatureInfo feature, AppLocalizations l10n) {
+  return switch (feature.id) {
+    KernelFeatureBridge.selinuxHide => l10n.featureSelinuxHideDescription,
+    KernelFeatureBridge.umount => l10n.featureUmountDescription,
+    _ => feature.name,
+  };
 }
 
 class _ExportLogsRow extends StatefulWidget {

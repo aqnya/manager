@@ -317,6 +317,14 @@
   "@settingsFloatingNavBarSummary": {
     "description": "Description of the floating navigation bar setting"
   },
+  "featuresTitle": "Kernel features",
+  "featureEmpty": "No kernel features",
+  "featureEmptyDescription": "The kernel module did not report any feature.",
+  "featureSelinuxHide": "SELinux hiding",
+  "featureSelinuxHideDescription": "Answer SELinux queries from the policy as it was before the module loaded.",
+  "featureUmount": "Module mount hiding",
+  "featureUmountDescription": "Remove module mounts from app mount namespaces and hide their mount IDs.",
+  "featureUpdateFailed": "Unable to update kernel feature",
   "settingsAbout": "About & diagnostics",
   "settingsAboutDescription": "Version, runtime, and open source information",
   "settingsExportLogs": "Export logs",

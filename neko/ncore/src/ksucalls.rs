@@ -24,10 +24,16 @@ const IOC_CMD: libc::c_int = 0xC008_4600u32 as libc::c_int;
 
 const IOC_SET_SEPOLICY: u32 = 12;
 const IOC_GET_VERSION: u32 = 14;
+const IOC_FEATURE_LIST: u32 = 15;
+const IOC_FEATURE_GET: u32 = 16;
+const IOC_FEATURE_SET: u32 = 17;
 const IOC_GET_SAFEMODE: u32 = 18;
 const IOC_DISARM_SAFEMODE: u32 = 19;
 const IOC_SET_INIT_PGRP: u32 = 20;
 const IOC_SET_MNT_LAYOUT: u32 = 23;
+
+const FMAC_DATA_FEATURE: usize = 12;
+const FMAC_OFF_FEATURE_VALUE: usize = 4;
 
 std::thread_local! {
     #[allow(clippy::missing_const_for_thread_local)]
@@ -124,6 +130,35 @@ pub fn get_info() -> ksu_uapi::ksu_get_info_cmd {
 
 pub fn get_version() -> i32 {
     get_info().version as i32
+}
+
+pub fn feature_list() -> Result<String> {
+    let mut data = [0u8; 1024];
+    ksuctl(IOC_FEATURE_LIST, &mut data)?;
+    let end = data
+        .iter()
+        .position(|byte| *byte == 0)
+        .unwrap_or(data.len());
+    Ok(String::from_utf8_lossy(&data[..end]).into_owned())
+}
+
+pub fn feature_get(id: u32) -> Result<u64> {
+    let mut data = [0u8; FMAC_DATA_FEATURE];
+    data[..4].copy_from_slice(&id.to_ne_bytes());
+    ksuctl(IOC_FEATURE_GET, &mut data)?;
+    Ok(u64::from_ne_bytes(
+        data[FMAC_OFF_FEATURE_VALUE..FMAC_OFF_FEATURE_VALUE + 8]
+            .try_into()
+            .expect("feature value has a fixed width"),
+    ))
+}
+
+pub fn feature_set(id: u32, value: u64) -> Result<()> {
+    let mut data = [0u8; FMAC_DATA_FEATURE];
+    data[..4].copy_from_slice(&id.to_ne_bytes());
+    data[FMAC_OFF_FEATURE_VALUE..FMAC_OFF_FEATURE_VALUE + 8].copy_from_slice(&value.to_ne_bytes());
+    ksuctl(IOC_FEATURE_SET, &mut data)?;
+    Ok(())
 }
 
 pub fn is_late_load() -> bool {
