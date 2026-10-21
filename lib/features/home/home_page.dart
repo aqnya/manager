@@ -6,6 +6,7 @@ import 'package:nekosu/core/ncore_ffi.dart';
 import 'package:nekosu/features/about/about_page.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:nekosu/shared/layout_insets.dart';
+import 'package:nekosu/shared/widgets/card_group.dart';
 
 enum InstallStatus { installed, needUpdate, needReboot, notInstalled, unknown }
 
@@ -58,50 +59,42 @@ class _HomeScreenContent extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final navBarClearance = appNavBarClearance(context);
-    final horizontalPadding = MediaQuery.sizeOf(context).width >= 600
-        ? 24.0
-        : 16.0;
 
     return Scaffold(
       backgroundColor: scheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
-          SliverAppBar.medium(
+          SliverAppBar(
+            pinned: true,
             title: Text(l10n.appTitle),
             backgroundColor: scheme.surfaceContainer,
             surfaceTintColor: Colors.transparent,
             scrolledUnderElevation: 0,
+            elevation: 0,
           ),
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(
-              horizontalPadding,
-              8,
-              horizontalPadding,
-              navBarClearance,
-            ),
+            padding: EdgeInsets.fromLTRB(0, 12, 0, navBarClearance),
             sliver: SliverToBoxAdapter(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 720),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _StatusCard(
-                        status: installStatus,
-                        isGki: isGki,
-                        managerVersion: managerVersion,
-                      ),
-                      const SizedBox(height: 24),
-                      _SectionHeader(text: l10n.deviceAndKernel),
-                      const SizedBox(height: 8),
-                      const _DeviceInfoList(),
-                      const SizedBox(height: 24),
-                      _SectionHeader(text: l10n.about),
-                      const SizedBox(height: 8),
-                      const _AboutItem(),
-                    ],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _StatusCard(
+                      status: installStatus,
+                      isGki: isGki,
+                      managerVersion: managerVersion,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 13),
+                  _SectionLabel(text: l10n.deviceAndKernel),
+                  const SizedBox(height: 13),
+                  const _DeviceInfoList(),
+                  const SizedBox(height: 13),
+                  _SectionLabel(text: l10n.about),
+                  const SizedBox(height: 13),
+                  const _AboutItem(),
+                ],
               ),
             ),
           ),
@@ -124,167 +117,130 @@ class _StatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
+    final isWorking = status == InstallStatus.installed;
     final isUpdate =
         status == InstallStatus.needUpdate ||
         status == InstallStatus.needReboot;
-    final isKernelAvailable = status == InstallStatus.installed || isUpdate;
-    final (containerColor, contentColor, icon) = switch (status) {
-      InstallStatus.installed => (
-        scheme.primaryContainer,
-        scheme.onPrimaryContainer,
-        Icons.verified_rounded,
-      ),
-      InstallStatus.needUpdate || InstallStatus.needReboot => (
-        scheme.tertiaryContainer,
-        scheme.onTertiaryContainer,
-        Icons.system_update_rounded,
-      ),
-      _ => (
-        scheme.errorContainer,
-        scheme.onErrorContainer,
-        Icons.error_outline_rounded,
-      ),
-    };
-    final title = switch (status) {
-      InstallStatus.installed => l10n.running,
-      InstallStatus.needUpdate || InstallStatus.needReboot => l10n.needUpdate,
-      _ => l10n.notInstalled,
-    };
 
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 0,
-      color: containerColor,
+    final containerColor = isWorking
+        ? scheme.secondaryContainer
+        : isUpdate
+        ? scheme.tertiaryContainer
+        : scheme.errorContainer;
+    final contentColor = isWorking
+        ? scheme.onSecondaryContainer
+        : isUpdate
+        ? scheme.onTertiaryContainer
+        : scheme.onErrorContainer;
+    final icon = isWorking
+        ? Icons.check_circle_rounded
+        : isUpdate
+        ? Icons.system_update_rounded
+        : Icons.warning_rounded;
+    final title = isWorking
+        ? l10n.running
+        : isUpdate
+        ? l10n.needUpdate
+        : l10n.notInstalled;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        color: containerColor,
+        borderRadius: BorderRadius.circular(28),
+      ),
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {},
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
               children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: contentColor.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(icon, size: 28, color: contentColor),
-                ),
+                Icon(icon, color: contentColor, size: 32),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.headlineSmall?.copyWith(
+                        style: textTheme.titleMedium?.copyWith(
                           color: contentColor,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       Text(
-                        l10n.aboutTagline,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: contentColor.withValues(alpha: 0.78),
+                        isWorking ? managerVersion : l10n.clickToInstall,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: contentColor.withValues(alpha: 0.8),
                         ),
                       ),
                     ],
                   ),
                 ),
-                if (isKernelAvailable) ...[
-                  const SizedBox(width: 12),
-                  _ModeBadge(label: isGki ? 'GKI' : 'LKM', color: contentColor),
-                ],
-              ],
-            ),
-            const SizedBox(height: 24),
-            Divider(
-              height: 1,
-              thickness: 1,
-              color: contentColor.withValues(alpha: 0.16),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    l10n.managerVersion,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: contentColor.withValues(alpha: 0.72),
-                    ),
-                  ),
-                ),
-                Text(
-                  'v$managerVersion',
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: contentColor,
-                  ),
+                _ModeLabel(
+                  label: isGki ? 'GKI' : 'LKM',
+                  color: contentColor,
+                  containerColor: contentColor.withValues(alpha: 0.16),
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _ModeBadge extends StatelessWidget {
-  const _ModeBadge({required this.label, required this.color});
+class _ModeLabel extends StatelessWidget {
+  const _ModeLabel({
+    required this.label,
+    required this.color,
+    required this.containerColor,
+  });
 
   final String label;
   final Color color;
+  final Color containerColor;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-        border: Border.all(color: color.withValues(alpha: 0.28)),
-        borderRadius: BorderRadius.circular(100),
+        color: containerColor,
+        borderRadius: BorderRadius.circular(50),
       ),
       child: Text(
         label,
         maxLines: 1,
-        style: Theme.of(context).textTheme.labelMedium
-            ?.copyWith(color: color, letterSpacing: 0.6),
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(color: color),
       ),
     );
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.text});
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel({required this.text});
 
   final String text;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    return Semantics(
-      header: true,
-      child: Padding(
-        padding: const EdgeInsets.only(left: 4),
-        child: Text(
-          text.toUpperCase(),
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: scheme.primary,
-            letterSpacing: 1.1,
-          ),
-        ),
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, top: 4),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.titleSmall
+            ?.copyWith(color: Theme.of(context).colorScheme.primary),
       ),
     );
   }
@@ -356,72 +312,25 @@ class _DeviceInfoListState extends State<_DeviceInfoList> {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final entries = [
-      _InfoEntry(
-        icon: Icons.memory_rounded,
-        label: l10n.kernelVersion,
-        value: _kernelVersion,
-      ),
-      _InfoEntry(
-        icon: Icons.android_rounded,
-        label: l10n.androidVersion,
-        value: _androidVersion,
-      ),
-      _InfoEntry(
-        icon: Icons.smartphone_rounded,
-        label: l10n.deviceModel,
-        value: _model,
-      ),
-      _InfoEntry(
-        icon: Icons.fingerprint_rounded,
-        label: l10n.fingerprint,
-        value: _fingerprint,
-        monospace: true,
-      ),
+      _InfoEntry(label: l10n.kernelVersion, value: _kernelVersion),
+      _InfoEntry(label: l10n.androidVersion, value: _androidVersion),
+      _InfoEntry(label: l10n.deviceModel, value: _model),
+      _InfoEntry(label: l10n.fingerprint, value: _fingerprint),
     ];
 
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 0,
-      color: scheme.surfaceContainerLow,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-        side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
-      ),
-      child: Column(
-        children: [
-          for (var index = 0; index < entries.length; index++) ...[
-            _DeviceInfoRow(entry: entries[index]),
-            if (index < entries.length - 1)
-              Divider(
-                height: 1,
-                thickness: 1,
-                indent: 72,
-                endIndent: 16,
-                color: scheme.outlineVariant.withValues(alpha: 0.4),
-              ),
-          ],
-        ],
-      ),
+    return CardGroup(
+      children: [for (final entry in entries) _DeviceInfoRow(entry: entry)],
     );
   }
 }
 
 class _InfoEntry {
-  const _InfoEntry({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.monospace = false,
-  });
+  const _InfoEntry({required this.label, required this.value});
 
-  final IconData icon;
   final String label;
   final String value;
-  final bool monospace;
 }
 
 class _DeviceInfoRow extends StatelessWidget {
@@ -431,42 +340,17 @@ class _DeviceInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final valueStyle = entry.monospace
-        ? theme.textTheme.bodySmall?.copyWith(
-            color: scheme.onSurface,
-            fontFamily: 'monospace',
-            height: 1.45,
-          )
-        : theme.textTheme.bodyLarge?.copyWith(color: scheme.onSurface);
+    final textTheme = Theme.of(context).textTheme;
 
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      minVerticalPadding: 8,
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: scheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(entry.icon, size: 20, color: scheme.onSurfaceVariant),
-      ),
-      title: Text(
-        entry.label,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: scheme.onSurfaceVariant,
-        ),
-      ),
-      subtitle: Padding(
-        padding: const EdgeInsets.only(top: 2),
-        child: Text(
-          entry.value,
-          maxLines: entry.monospace ? 3 : 2,
-          overflow: TextOverflow.ellipsis,
-          style: valueStyle,
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(entry.label, style: textTheme.bodyLarge),
+          const SizedBox(height: 2),
+          Text(entry.value, style: textTheme.bodyMedium),
+        ],
       ),
     );
   }
@@ -477,55 +361,45 @@ class _AboutItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 0,
-      color: scheme.surfaceContainerLow,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-        side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
-      ),
-      child: ListTile(
-        onTap: () => Navigator.of(context).push<void>(
-          MaterialPageRoute(builder: (context) => const AboutPage()),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        minVerticalPadding: 10,
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: scheme.primaryContainer,
-            borderRadius: BorderRadius.circular(12),
+    return CardGroup(
+      children: [
+        InkWell(
+          onTap: () => Navigator.of(context).push<void>(
+            MaterialPageRoute(builder: (context) => const AboutPage()),
           ),
-          child: Icon(
-            Icons.info_outline_rounded,
-            size: 20,
-            color: scheme.onPrimaryContainer,
-          ),
-        ),
-        title: Text(
-          l10n.aboutCardTitle,
-          style: theme.textTheme.titleMedium?.copyWith(color: scheme.onSurface),
-        ),
-        subtitle: Text(
-          l10n.aboutCardDescription,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: scheme.onSurfaceVariant,
+          onHighlightChanged: CardItem.pressReporterOf(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(l10n.aboutCardTitle, style: textTheme.titleSmall),
+                      const SizedBox(height: 2),
+                      Text(
+                        l10n.aboutCardDescription,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.keyboard_arrow_right_rounded,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ],
+            ),
           ),
         ),
-        trailing: Icon(
-          Icons.chevron_right_rounded,
-          color: scheme.onSurfaceVariant,
-        ),
-      ),
+      ],
     );
   }
 }
