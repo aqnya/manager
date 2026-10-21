@@ -125,6 +125,7 @@
   "modulesLoadFailed": "模块列表加载失败",
   "modulesAction": "执行",
   "modulesWebUi": "WebUI",
+  "webUiLoadFailed": "无法加载 WebUI",
   "modulesMore": "更多",
   "modulesRemove": "移除",
   "modulesUndoRemove": "撤销",

@@ -233,6 +233,7 @@
   "modulesLoadFailed": "Failed to load modules",
   "modulesAction": "Action",
   "modulesWebUi": "WebUI",
+  "webUiLoadFailed": "Unable to load WebUI",
   "modulesMore": "More",
   "modulesRemove": "Remove",
   "modulesUndoRemove": "Undo",

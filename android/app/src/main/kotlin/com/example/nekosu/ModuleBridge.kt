@@ -14,8 +14,7 @@ import java.util.concurrent.Executors
  * Platform-only helpers for the FFI-backed module screen.
  *
  * Module state and commands are handled by ncore_ffi; this bridge only opens
- * Android's document picker, stages the selected ZIP in the app cache and
- * launches the WebView activity for an already-prepared webroot.
+ * Android's document picker and stages the selected ZIP in the app cache.
  */
 class ModuleBridge(
     private val activity: FlutterActivity,
@@ -63,7 +62,6 @@ class ModuleBridge(
     ) {
         when (call.method) {
             "pickZip" -> pickZip(result)
-            "openWebUi" -> openWebUi(call, result)
             else -> result.notImplemented()
         }
     }
@@ -112,26 +110,6 @@ class ModuleBridge(
                     )
                 }
             }
-        }
-    }
-
-    private fun openWebUi(
-        call: MethodCall,
-        result: MethodChannel.Result,
-    ) {
-        val path = call.argument<String>("path")
-        if (path.isNullOrBlank() || !File(path).isFile) {
-            result.error("webui_missing", "WebUI entry file is unavailable", null)
-            return
-        }
-        try {
-            activity.startActivity(
-                Intent(activity, ModuleWebUiActivity::class.java)
-                    .putExtra(ModuleWebUiActivity.EXTRA_FILE, path),
-            )
-            result.success(true)
-        } catch (error: Exception) {
-            result.error("webui_failed", error.message ?: "Unable to open WebUI", null)
         }
     }
 }

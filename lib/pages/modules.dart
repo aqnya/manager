@@ -6,6 +6,7 @@ import 'package:nekosu/haze_app_bar.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:nekosu/layout_insets.dart';
 import 'package:nekosu/modules.dart';
+import 'package:nekosu/pages/webui.dart';
 
 class ModulesPage extends StatefulWidget {
   const ModulesPage({super.key});
@@ -191,7 +192,7 @@ class _ModulesPageState extends State<ModulesPage> {
   }
 
   Future<void> _openWebUi(ModuleInfo module) async {
-    final result = await ModuleBridge.openWebUi(module.id);
+    final result = await ModuleBridge.prepareWebUi(module.id);
     if (!mounted) return;
     if (!result.ok) {
       _showMessage(
@@ -199,7 +200,18 @@ class _ModulesPageState extends State<ModulesPage> {
             ? 'Unable to open WebUI'
             : result.output.trim(),
       );
+      return;
     }
+    final entryPath = result.output.trim();
+    if (entryPath.isEmpty) {
+      _showMessage('Unable to open WebUI');
+      return;
+    }
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => WebUiPage(entryPath: entryPath),
+      ),
+    );
   }
 
   void _showMessage(String message) {

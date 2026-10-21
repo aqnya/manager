@@ -176,24 +176,8 @@ class ModuleBridge {
     return ModuleCommandResult.fromEnvelope(envelope);
   }
 
-  static Future<ModuleCommandResult> openWebUi(String id) async {
+  static Future<ModuleCommandResult> prepareWebUi(String id) async {
     final envelope = await Isolate.run(() => NcoreFfi.moduleWebUi(id));
-    final result = ModuleCommandResult.fromEnvelope(envelope);
-    if (!result.ok) return result;
-    try {
-      final launched = await _platform.invokeMethod<bool>('openWebUi', {
-        'path': result.output.trim(),
-      });
-      return launched == true
-          ? const ModuleCommandResult(code: 0, output: '')
-          : const ModuleCommandResult(code: -1, output: 'Unable to open WebUI');
-    } on PlatformException catch (error) {
-      return ModuleCommandResult(code: -1, output: error.message ?? error.code);
-    } on MissingPluginException {
-      return const ModuleCommandResult(
-        code: -1,
-        output: 'Platform bridge is unavailable',
-      );
-    }
+    return ModuleCommandResult.fromEnvelope(envelope);
   }
 }
