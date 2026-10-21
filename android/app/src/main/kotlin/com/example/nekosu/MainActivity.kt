@@ -20,6 +20,8 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -213,7 +215,7 @@ class MainActivity : FlutterActivity() {
     ) {
         executor.execute {
             try {
-                val file = createLogFile()
+                val file = createLogArchive()
                 mainHandler.post {
                     try {
                         val uri =
@@ -224,7 +226,7 @@ class MainActivity : FlutterActivity() {
                             )
                         val intent =
                             Intent(Intent.ACTION_SEND).apply {
-                                type = "text/plain"
+                                type = "application/zip"
                                 putExtra(Intent.EXTRA_STREAM, uri)
                                 putExtra(Intent.EXTRA_SUBJECT, title)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -251,7 +253,7 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun createLogFile(): File {
+    private fun createLogArchive(): File {
         val directory = File(cacheDir, "logs").apply { mkdirs() }
         directory
             .listFiles()
@@ -261,40 +263,72 @@ class MainActivity : FlutterActivity() {
             ?.forEach { it.delete() }
 
         val timestamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
-        val file = File(directory, "nekosu-logs-$timestamp.txt")
+        val file = File(directory, "nekosu-logs-$timestamp.zip")
         val packageInfo =
             packageManager.getPackageInfo(
                 packageName,
                 0,
             )
 
-        file.bufferedWriter().use { writer ->
-            writer.appendLine("NekoSU diagnostic log")
-            writer.appendLine("Generated: ${Date()}")
-            writer.appendLine("Package: $packageName")
-            writer.appendLine("Version: ${packageInfo.versionName} (${packageInfo.longVersionCode})")
-            writer.appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL}")
-            writer.appendLine("Android: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})")
-            writer.appendLine("ABI: ${Build.SUPPORTED_ABIS.joinToString()}")
-            writer.appendLine("Kernel: ${System.getProperty("os.version")}")
-            writer.appendLine("Fingerprint: ${Build.FINGERPRINT}")
-            writer.appendLine()
-            writer.appendLine("===== logcat =====")
-            writer.append(captureCommand(listOf("logcat", "-d", "-v", "threadtime", "-t", "20000")))
-            writer.appendLine()
-            writer.appendLine("===== kernel log =====")
-            writer.append(captureRootCommand("dmesg 2>&1 | tail -n 12000"))
-            writer.appendLine()
-            writer.appendLine("===== ncore boot logs =====")
-            writer.append(
-                captureRootCommand(
-                    "for f in /data/adb/nksu/log/*.log; do " +
-                        "[ -f \"\$f\" ] || continue; " +
-                        "echo; echo \"--- \$f ---\"; tail -n 12000 \"\$f\"; done 2>&1",
+        val deviceInfo =
+            buildString {
+                appendLine("NekoSU diagnostic archive")
+                appendLine("Generated: ${Date()}")
+                appendLine("Package: $packageName")
+                appendLine("Version: ${packageInfo.versionName} (${packageInfo.longVersionCode})")
+                appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL}")
+                appendLine("Android: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})")
+                appendLine("ABI: ${Build.SUPPORTED_ABIS.joinToString()}")
+                appendLine("Kernel: ${System.getProperty("os.version")}")
+                appendLine("Fingerprint: ${Build.FINGERPRINT}")
+                appendLine()
+                appendLine("system/: Android logcat, kernel log and system properties.")
+                appendLine("nekosu/: logs emitted by this process and NekoSU boot logs.")
+            }
+
+        val systemLogcat = captureCommand(listOf("logcat", "-d", "-v", "threadtime", "-t", "20000"))
+        val processLogcat =
+            captureCommand(
+                listOf(
+                    "logcat",
+                    "-d",
+                    "-v",
+                    "threadtime",
+                    "-t",
+                    "20000",
+                    "--pid=${android.os.Process.myPid()}",
                 ),
             )
+        val kernelLog = captureRootCommand("dmesg 2>&1 | tail -n 12000")
+        val systemProperties = captureCommand(listOf("getprop"))
+        val ncoreLogs =
+            captureRootCommand(
+                "for f in /data/adb/nksu/log/*.log; do " +
+                    "[ -f \"\$f\" ] || continue; " +
+                    "echo; echo \"--- \$f ---\"; tail -n 12000 \"\$f\"; done 2>&1",
+            )
+
+        file.outputStream().buffered().use { output ->
+            ZipOutputStream(output).use { archive ->
+                addArchiveEntry(archive, "device-info.txt", deviceInfo)
+                addArchiveEntry(archive, "system/logcat.txt", systemLogcat)
+                addArchiveEntry(archive, "system/dmesg.txt", kernelLog)
+                addArchiveEntry(archive, "system/properties.txt", systemProperties)
+                addArchiveEntry(archive, "nekosu/logcat.txt", processLogcat)
+                addArchiveEntry(archive, "nekosu/ncore-boot.log", ncoreLogs)
+            }
         }
         return file
+    }
+
+    private fun addArchiveEntry(
+        archive: ZipOutputStream,
+        name: String,
+        content: String,
+    ) {
+        archive.putNextEntry(ZipEntry(name))
+        archive.write(content.toByteArray(Charsets.UTF_8))
+        archive.closeEntry()
     }
 
     private fun captureCommand(command: List<String>): String {
