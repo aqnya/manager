@@ -340,18 +340,9 @@ class _DeviceInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(entry.label, style: textTheme.bodyLarge),
-          const SizedBox(height: 2),
-          Text(entry.value, style: textTheme.bodyMedium),
-        ],
-      ),
+    return ListTile(
+      title: Text(entry.label),
+      subtitle: Text(entry.value, maxLines: 2, overflow: TextOverflow.ellipsis),
     );
   }
 }
@@ -361,42 +352,21 @@ class _AboutItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
     return CardGroup(
       children: [
-        InkWell(
+        ListRow(
+          icon: const Icon(Icons.info_outline_rounded),
+          headline: Text(l10n.aboutCardTitle),
+          supporting: Text(
+            l10n.aboutCardDescription,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: const Icon(Icons.chevron_right_rounded),
           onTap: () => Navigator.of(context).push<void>(
             MaterialPageRoute(builder: (context) => const AboutPage()),
-          ),
-          onHighlightChanged: CardItem.pressReporterOf(context),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(l10n.aboutCardTitle, style: textTheme.titleSmall),
-                      const SizedBox(height: 2),
-                      Text(
-                        l10n.aboutCardDescription,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.keyboard_arrow_right_rounded,
-                  color: scheme.onSurfaceVariant,
-                ),
-              ],
-            ),
           ),
         ),
       ],
