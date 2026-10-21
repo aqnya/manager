@@ -12,6 +12,7 @@ class AppPopupMenuItem<T> {
     this.icon,
     this.selected = false,
     this.destructive = false,
+    this.dividerBefore = false,
   });
 
   final T value;
@@ -19,12 +20,13 @@ class AppPopupMenuItem<T> {
   final IconData? icon;
   final bool selected;
   final bool destructive;
+  final bool dividerBefore;
 }
 
 /// A compact action card used in place of Flutter's [PopupMenuButton].
 ///
-/// The visual follows Legado's `PopupAction`: a Material 3 surface container
-/// with an 8dp inset, wrapping text actions and a 240ms fade transition.
+/// The visual follows Legado's rounded dropdown menu: a low-emphasis container
+/// holding full-width surface actions, with a check mark for the selected item.
 class AppPopupMenu<T> extends StatefulWidget {
   const AppPopupMenu({
     super.key,
@@ -35,7 +37,7 @@ class AppPopupMenu<T> extends StatefulWidget {
     this.child,
     this.tooltip,
     this.alignment = AppPopupMenuAlignment.end,
-    this.maxWidth = 340,
+    this.maxWidth = 280,
   }) : assert(icon != null || child != null);
 
   final List<AppPopupMenuItem<T>> items;
@@ -141,21 +143,26 @@ class _AppPopupMenuCard<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Material(
-      color: scheme.surfaceContainer,
+      color: scheme.surfaceContainerLow,
       surfaceTintColor: Colors.transparent,
-      elevation: 3,
-      shadowColor: scheme.shadow.withValues(alpha: 0.2),
+      elevation: 4,
+      shadowColor: scheme.shadow.withValues(alpha: 0.24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       clipBehavior: Clip.antiAlias,
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: Wrap(
-          spacing: 4,
-          runSpacing: 4,
-          children: [
-            for (final item in items)
-              _AppPopupMenuAction<T>(item: item, onSelected: onSelected),
-          ],
+        child: IntrinsicWidth(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: 8,
+            children: [
+              for (final item in items) ...[
+                if (item.dividerBefore) const _AppPopupMenuDivider(),
+                _AppPopupMenuAction<T>(item: item, onSelected: onSelected),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -175,11 +182,8 @@ class _AppPopupMenuAction<T> extends StatelessWidget {
     final foreground = item.destructive
         ? scheme.error
         : item.selected
-        ? scheme.onSecondaryContainer
+        ? scheme.primary
         : scheme.onSurface;
-    final background = item.selected
-        ? scheme.secondaryContainer
-        : Colors.transparent;
     final borderRadius = BorderRadius.circular(8);
     final icon = item.icon;
 
@@ -187,46 +191,75 @@ class _AppPopupMenuAction<T> extends StatelessWidget {
       button: true,
       selected: item.selected,
       child: Material(
-        type: MaterialType.transparency,
-        child: Ink(
-          decoration: BoxDecoration(
-            color: background,
-            borderRadius: borderRadius,
-          ),
-          child: InkWell(
-            onTap: () => onSelected(item.value),
-            borderRadius: borderRadius,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 40, minWidth: 48),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (icon != null) ...[
-                      Icon(icon, size: 18, color: foreground),
-                      const SizedBox(width: 6),
-                    ],
-                    Flexible(
-                      child: Text(
-                        item.label,
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: foreground,
-                          fontWeight: item.selected
-                              ? FontWeight.w500
-                              : FontWeight.w400,
+        color: scheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: borderRadius),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => onSelected(item.value),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48, minWidth: 120),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (icon != null) ...[
+                        Icon(icon, size: 18, color: foreground),
+                        const SizedBox(width: 12),
+                      ],
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: icon == null ? 200 : 160,
+                        ),
+                        child: Text(
+                          item.label,
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: foreground,
+                          ),
                         ),
                       ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12),
+                    child: Icon(
+                      Icons.check_rounded,
+                      size: 20,
+                      color: item.selected ? foreground : Colors.transparent,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AppPopupMenuDivider extends StatelessWidget {
+  const _AppPopupMenuDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 10,
+      child: Center(
+        child: FractionallySizedBox(
+          widthFactor: 0.2,
+          heightFactor: 0.2,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.outlineVariant
+                  .withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(999),
             ),
           ),
         ),

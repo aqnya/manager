@@ -299,7 +299,6 @@ class _SettingsChoice<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppPopupMenu<T>(
-      alignment: AppPopupMenuAlignment.start,
       onSelected: onChanged,
       items: [
         for (final choice in choices)
