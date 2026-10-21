@@ -270,6 +270,10 @@
   "settingsAmoledSummary": "Use a pure black background in dark mode",
   "settingsAbout": "About & diagnostics",
   "settingsAboutDescription": "Version information and runtime details",
+  "settingsExportLogs": "Export logs",
+  "settingsExportLogsSummary": "Collect device details, system logs and kernel logs for sharing",
+  "settingsExportLogsSuccess": "Logs are ready to save or share",
+  "settingsExportLogsFailed": "Unable to export logs",
   "moduleVersion": "Module runtime",
   "unknownValue": "Unavailable"
 }

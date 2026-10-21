@@ -3,6 +3,7 @@ import 'package:nekosu/card_group.dart';
 import 'package:nekosu/ffi.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:nekosu/layout_insets.dart';
+import 'package:nekosu/log_export.dart';
 import 'package:nekosu/settings_controller.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -135,6 +136,7 @@ class SettingsPage extends StatelessWidget {
                           trailing: const Icon(Icons.chevron_right_rounded),
                           onTap: () => _showAbout(context, l10n),
                         ),
+                        const _ExportLogsRow(),
                       ],
                     ),
                   ]),
@@ -194,6 +196,62 @@ class SettingsPage extends StatelessWidget {
       'zh' => l10n.languageChinese,
       _ => l10n.languageSystem,
     };
+  }
+}
+
+class _ExportLogsRow extends StatefulWidget {
+  const _ExportLogsRow();
+
+  @override
+  State<_ExportLogsRow> createState() => _ExportLogsRowState();
+}
+
+class _ExportLogsRowState extends State<_ExportLogsRow> {
+  bool _exporting = false;
+
+  Future<void> _export() async {
+    if (_exporting) return;
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _exporting = true);
+    try {
+      await LogExport.export(title: l10n.settingsExportLogs);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.settingsExportLogsSuccess)));
+    } on PlatformException catch (error) {
+      _showError(error.message ?? l10n.settingsExportLogsFailed);
+    } on MissingPluginException {
+      _showError(l10n.settingsExportLogsFailed);
+    } catch (_) {
+      _showError(l10n.settingsExportLogsFailed);
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return ListRow(
+      icon: const Icon(Icons.file_upload_outlined),
+      headline: Text(l10n.settingsExportLogs),
+      supporting: Text(l10n.settingsExportLogsSummary),
+      trailing: _exporting
+          ? const SizedBox.square(
+              dimension: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.ios_share_rounded),
+      onTap: _exporting ? null : _export,
+    );
   }
 }
 

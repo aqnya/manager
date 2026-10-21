@@ -9,11 +9,17 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.LruCache
+import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -92,6 +98,10 @@ class MainActivity : FlutterActivity() {
                         result.success(null)
                     }
                 }
+                "exportLogs" -> exportLogs(
+                    call.argument<String>("title") ?: "NekoSU logs",
+                    result,
+                )
                 else -> result.notImplemented()
             }
         }
@@ -195,5 +205,124 @@ class MainActivity : FlutterActivity() {
         val bytes = stream.toByteArray()
         iconCache.put(packageName, bytes)
         return bytes
+    }
+
+    private fun exportLogs(
+        title: String,
+        result: MethodChannel.Result,
+    ) {
+        executor.execute {
+            try {
+                val file = createLogFile()
+                mainHandler.post {
+                    try {
+                        val uri =
+                            FileProvider.getUriForFile(
+                                this,
+                                "$packageName.fileprovider",
+                                file,
+                            )
+                        val intent =
+                            Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_STREAM, uri)
+                                putExtra(Intent.EXTRA_SUBJECT, title)
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+                        startActivity(Intent.createChooser(intent, title))
+                        result.success(file.absolutePath)
+                    } catch (error: Exception) {
+                        result.error(
+                            "log_export_share_failed",
+                            error.message ?: "Unable to share logs",
+                            null,
+                        )
+                    }
+                }
+            } catch (error: Exception) {
+                mainHandler.post {
+                    result.error(
+                        "log_export_failed",
+                        error.message ?: "Unable to export logs",
+                        null,
+                    )
+                }
+            }
+        }
+    }
+
+    private fun createLogFile(): File {
+        val directory = File(cacheDir, "logs").apply { mkdirs() }
+        directory
+            .listFiles()
+            ?.filter { it.name.startsWith("nekosu-logs-") }
+            ?.sortedByDescending { it.lastModified() }
+            ?.drop(4)
+            ?.forEach { it.delete() }
+
+        val timestamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
+        val file = File(directory, "nekosu-logs-$timestamp.txt")
+        val packageInfo =
+            packageManager.getPackageInfo(
+                packageName,
+                0,
+            )
+
+        file.bufferedWriter().use { writer ->
+            writer.appendLine("NekoSU diagnostic log")
+            writer.appendLine("Generated: ${Date()}")
+            writer.appendLine("Package: $packageName")
+            writer.appendLine("Version: ${packageInfo.versionName} (${packageInfo.longVersionCode})")
+            writer.appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL}")
+            writer.appendLine("Android: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})")
+            writer.appendLine("ABI: ${Build.SUPPORTED_ABIS.joinToString()}")
+            writer.appendLine("Kernel: ${System.getProperty("os.version")}")
+            writer.appendLine("Fingerprint: ${Build.FINGERPRINT}")
+            writer.appendLine()
+            writer.appendLine("===== logcat =====")
+            writer.append(captureCommand(listOf("logcat", "-d", "-v", "threadtime", "-t", "20000")))
+            writer.appendLine()
+            writer.appendLine("===== kernel log =====")
+            writer.append(captureRootCommand("dmesg 2>&1 | tail -n 12000"))
+            writer.appendLine()
+            writer.appendLine("===== ncore boot logs =====")
+            writer.append(
+                captureRootCommand(
+                    "for f in /data/adb/nksu/log/*.log; do " +
+                        "[ -f \"\$f\" ] || continue; " +
+                        "echo; echo \"--- \$f ---\"; tail -n 12000 \"\$f\"; done 2>&1",
+                ),
+            )
+        }
+        return file
+    }
+
+    private fun captureCommand(command: List<String>): String {
+        return try {
+            readProcess(ProcessBuilder(command).redirectErrorStream(true).start())
+        } catch (error: Exception) {
+            "Unavailable: ${error.message}\n"
+        }
+    }
+
+    private fun captureRootCommand(command: String): String {
+        return try {
+            readProcess(
+                ProcessBuilder("su", "-c", command)
+                    .redirectErrorStream(true)
+                    .start(),
+            )
+        } catch (error: Exception) {
+            "Unavailable: ${error.message}\n"
+        }
+    }
+
+    private fun readProcess(process: Process): String {
+        val output = process.inputStream.bufferedReader().use { it.readText() }
+        if (!process.waitFor(20, TimeUnit.SECONDS)) {
+            process.destroyForcibly()
+            return output + "\n[command timed out]\n"
+        }
+        return output.ifBlank { "[no output, exit=${process.exitValue()}]\n" }
     }
 }
