@@ -172,7 +172,7 @@ class _AboutHero extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(
         children: [
-          Image.asset('assets/images/app_icon.png', width: 96, height: 96),
+          Image.asset('assets/images/app_icon.png', width: 64, height: 64),
           const SizedBox(height: 16),
           Text(
             l10n.appTitle,
