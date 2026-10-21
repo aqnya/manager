@@ -99,8 +99,10 @@ class _AppDetailPageState extends State<AppDetailPage> {
         _caps = {...defaultCaps};
         _domain = defaultSelinuxDomain;
         _namespace = NksuNamespace.inherited;
-      } else if (_caps.isEmpty) {
-        _caps = {...defaultCaps};
+      } else {
+        _allowed = true;
+        if (_caps.isEmpty) _caps = {...defaultCaps};
+        if (_domain.trim().isEmpty) _domain = defaultSelinuxDomain;
       }
     });
     _persist();
