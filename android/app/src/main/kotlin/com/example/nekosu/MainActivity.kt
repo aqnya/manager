@@ -49,6 +49,10 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
+        flutterEngine.platformViewsController.registry.registerViewFactory(
+            "nekosu/webui",
+            WebUiViewFactory(flutterEngine.dartExecutor.binaryMessenger),
+        )
         moduleBridge = ModuleBridge(this, flutterEngine.dartExecutor.binaryMessenger).also { it.register() }
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
@@ -123,6 +127,7 @@ class MainActivity : FlutterActivity() {
         resultCode: Int,
         data: Intent?,
     ) {
+        if (WebUiFileChooser.onActivityResult(requestCode, resultCode, data)) return
         if (moduleBridge?.onActivityResult(requestCode, resultCode, data) == true) return
         super.onActivityResult(requestCode, resultCode, data)
     }
