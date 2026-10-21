@@ -794,7 +794,7 @@ class _ModeLabel extends StatelessWidget {
         child: Text(
           label,
           style: Theme.of(context).textTheme.labelSmall
-              ?.copyWith(color: foreground, fontWeight: FontWeight.w600),
+              ?.copyWith(color: foreground, fontWeight: FontWeight.w500),
         ),
       ),
     );

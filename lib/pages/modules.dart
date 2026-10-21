@@ -422,7 +422,7 @@ class _ModuleCardState extends State<_ModuleCard> {
                             Text(
                               module.title,
                               style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w500,
                                 decoration: textDecoration,
                               ),
                             ),
@@ -653,7 +653,7 @@ class _ModulesEmptyState extends StatelessWidget {
           Text(
             failed ? l10n.modulesLoadFailed : l10n.modulesEmpty,
             textAlign: TextAlign.center,
-            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 6),
           Text(

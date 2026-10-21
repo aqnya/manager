@@ -137,7 +137,7 @@ class _TabItem extends StatelessWidget {
             duration: const Duration(milliseconds: 250),
             style: TextStyle(
               fontSize: 11,
-              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+              fontWeight: FontWeight.w500,
               color: contentColor,
             ),
             child: Text(

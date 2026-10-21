@@ -262,7 +262,7 @@ class _SettingsChoice<T> extends StatelessWidget {
                   choice.label,
                   style: TextStyle(
                     fontWeight: choice.value == value
-                        ? FontWeight.w600
+                        ? FontWeight.w500
                         : FontWeight.normal,
                   ),
                 ),
