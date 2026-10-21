@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nekosu/data/modules.dart';
@@ -7,6 +5,7 @@ import 'package:nekosu/features/modules/webui_page.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:nekosu/shared/layout_insets.dart';
 import 'package:nekosu/shared/widgets/app_popup_menu.dart';
+import 'package:nekosu/shared/widgets/output_page.dart';
 
 class ModulesPage extends StatefulWidget {
   const ModulesPage({super.key});
@@ -21,13 +20,7 @@ class _ModulesPageState extends State<ModulesPage> {
 
   bool _loading = true;
   String? _loadError;
-
-  bool _logVisible = false;
-  bool _logRunning = false;
-  String? _logType;
-  String _logTitle = '';
-  String _logText = '';
-  int? _logCode;
+  bool _installing = false;
 
   @override
   void initState() {
@@ -50,86 +43,74 @@ class _ModulesPageState extends State<ModulesPage> {
   }
 
   Future<void> _installModule() async {
-    if (_logRunning) return;
+    if (_installing) return;
     final l10n = AppLocalizations.of(context)!;
-    setState(() {
-      _logVisible = true;
-      _logRunning = true;
-      _logType = 'install';
-      _logTitle = l10n.modulesInstallRunning;
-      _logText = '';
-      _logCode = null;
-    });
+    setState(() => _installing = true);
     try {
       final path = await ModuleBridge.pickZip();
       if (!mounted) return;
-      if (path == null) {
-        _closeLog();
-        return;
-      }
-      final result = await ModuleBridge.install(path);
-      _finishCommandResult(result);
+      if (path == null) return;
+      await _openOutput(
+        runningTitle: l10n.modulesInstallRunning,
+        successTitle: l10n.modulesInstallDone,
+        failureTitle: l10n.modulesInstallFailed,
+        logFileName: 'nekosu-module-install',
+        task: () => ModuleBridge.installOutput(path),
+      );
+      if (mounted) await _load();
     } on PlatformException catch (error) {
-      _finishLocalLog(error.message ?? error.code);
+      _showMessage(error.message ?? error.code);
     } on MissingPluginException {
-      _finishLocalLog('Module bridge is unavailable');
+      _showMessage(l10n.modulesInstallFailed);
     } catch (error) {
-      _finishLocalLog(error.toString());
+      _showMessage(error.toString());
+    } finally {
+      if (mounted) setState(() => _installing = false);
     }
   }
 
   Future<void> _runAction(ModuleInfo module) async {
-    if (_busyModules.contains(module.id) || _logRunning) return;
+    if (_busyModules.contains(module.id)) return;
     final l10n = AppLocalizations.of(context)!;
-    setState(() {
-      _busyModules.add(module.id);
-      _logVisible = true;
-      _logRunning = true;
-      _logType = 'action';
-      _logTitle = '${l10n.modulesActionRunning} · ${module.title}';
-      _logText = '';
-      _logCode = null;
-    });
-    final result = await ModuleBridge.action(module.id);
-    _finishCommandResult(result, moduleId: module.id);
+    setState(() => _busyModules.add(module.id));
+    try {
+      await _openOutput(
+        runningTitle: l10n.modulesActionRunning,
+        successTitle: l10n.modulesActionDone,
+        failureTitle: l10n.modulesActionFailed,
+        logFileName: 'nekosu-module-action-${module.id}',
+        task: () => ModuleBridge.actionOutput(module.id),
+      );
+      if (mounted) await _load();
+    } finally {
+      if (mounted) setState(() => _busyModules.remove(module.id));
+    }
   }
 
-  void _finishCommandResult(ModuleCommandResult result, {String? moduleId}) {
-    if (!mounted) return;
-    setState(() {
-      if (moduleId != null) _busyModules.remove(moduleId);
-      _logRunning = false;
-      _logCode = result.code;
-      final output = result.output.trim();
-      if (output.isNotEmpty) {
-        _logText = '${_logText.trim()}\n$output'.trim();
-        const maxLogLength = 256 * 1024;
-        if (_logText.length > maxLogLength) {
-          _logText = _logText.substring(_logText.length - maxLogLength);
-        }
-      }
-    });
-    if (result.ok) unawaited(_load());
-  }
-
-  void _finishLocalLog(String message) {
-    if (!mounted) return;
-    setState(() {
-      _logRunning = false;
-      _logCode = -1;
-      if (message.trim().isNotEmpty) _logText += '${message.trim()}\n';
-    });
-  }
-
-  void _closeLog() {
-    setState(() {
-      _logVisible = false;
-      _logRunning = false;
-      _logType = null;
-      _logTitle = '';
-      _logText = '';
-      _logCode = null;
-    });
+  Future<void> _openOutput({
+    required String runningTitle,
+    required String successTitle,
+    required String failureTitle,
+    required String logFileName,
+    required OutputTask task,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    return Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => OutputPage(
+          task: task,
+          runningTitle: runningTitle,
+          successTitle: successTitle,
+          failureTitle: failureTitle,
+          logFileName: logFileName,
+          completionAction: OutputAction(
+            label: l10n.dialogDone,
+            icon: Icons.check_rounded,
+            onPressed: (context) => Navigator.of(context).pop(),
+          ),
+        ),
+      ),
+    );
   }
 
   Future<bool> _runModuleOperation(ModuleInfo module, String operation) async {
@@ -221,65 +202,11 @@ class _ModulesPageState extends State<ModulesPage> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  String _logHeader(AppLocalizations l10n) {
-    if (_logRunning) {
-      return _logType == 'action' ? _logTitle : l10n.modulesInstallRunning;
-    }
-    final succeeded = _logCode == 0;
-    if (_logType == 'action') {
-      return succeeded ? l10n.modulesActionDone : l10n.modulesActionFailed;
-    }
-    return succeeded ? l10n.modulesInstallDone : l10n.modulesInstallFailed;
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final navBarClearance = appNavBarClearance(context);
     final scheme = Theme.of(context).colorScheme;
-
-    if (_logVisible) {
-      return PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (didPop, _) {
-          if (!didPop && !_logRunning) _closeLog();
-        },
-        child: Scaffold(
-          backgroundColor: scheme.surfaceContainer,
-          body: CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                pinned: true,
-                backgroundColor: scheme.surfaceContainer,
-                surfaceTintColor: Colors.transparent,
-                scrolledUnderElevation: 0,
-                elevation: 0,
-                title: Text(_logHeader(l10n)),
-                leading: _logRunning
-                    ? null
-                    : IconButton(
-                        onPressed: _closeLog,
-                        icon: const Icon(Icons.close_rounded),
-                        tooltip: l10n.modulesClose,
-                      ),
-              ),
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(16, 12, 16, navBarClearance),
-                  child: _ModuleLogPanel(
-                    text: _logText.trim(),
-                    waiting: l10n.modulesWaiting,
-                    running: _logRunning,
-                    succeeded: _logCode == 0,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
 
     return Scaffold(
       backgroundColor: scheme.surfaceContainer,
@@ -692,113 +619,6 @@ class _ModulesEmptyState extends StatelessWidget {
               icon: const Icon(Icons.refresh_rounded),
               label: Text(l10n.retry),
             ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ModuleLogPanel extends StatefulWidget {
-  const _ModuleLogPanel({
-    required this.text,
-    required this.waiting,
-    required this.running,
-    required this.succeeded,
-  });
-
-  final String text;
-  final String waiting;
-  final bool running;
-  final bool succeeded;
-
-  @override
-  State<_ModuleLogPanel> createState() => _ModuleLogPanelState();
-}
-
-class _ModuleLogPanelState extends State<_ModuleLogPanel> {
-  final _scrollController = ScrollController();
-
-  @override
-  void didUpdateWidget(covariant _ModuleLogPanel oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.text != widget.text) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted || !_scrollController.hasClients) return;
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: scheme.surfaceBright,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-            child: Row(
-              children: [
-                if (widget.running)
-                  const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                else
-                  Icon(
-                    widget.succeeded
-                        ? Icons.check_circle_rounded
-                        : Icons.error_rounded,
-                    size: 20,
-                    color: widget.succeeded ? scheme.primary : scheme.error,
-                  ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    widget.running
-                        ? widget.waiting
-                        : widget.text.split('\n').first,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Divider(
-            height: 1,
-            color: scheme.outlineVariant.withValues(alpha: 0.5),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              child: SelectableText(
-                widget.text.isEmpty ? widget.waiting : widget.text,
-                style: textTheme.bodySmall?.copyWith(
-                  height: 1.45,
-                  color: scheme.onSurface,
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );

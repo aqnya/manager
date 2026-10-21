@@ -1,13 +1,16 @@
 package com.example.nekosu
 
+import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.Build
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.provider.MediaStore
 import android.util.LruCache
 import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterActivity
@@ -109,6 +112,11 @@ class MainActivity : FlutterActivity() {
                 }
                 "exportLogs" -> exportLogs(
                     call.argument<String>("title") ?: "NekoSU logs",
+                    result,
+                )
+                "saveOutputLog" -> saveOutputLog(
+                    call.argument<String>("fileName") ?: "nekosu-output.log",
+                    call.argument<String>("content") ?: "",
                     result,
                 )
                 else -> result.notImplemented()
@@ -256,6 +264,48 @@ class MainActivity : FlutterActivity() {
                     result.error(
                         "log_export_failed",
                         error.message ?: "Unable to export logs",
+                        null,
+                    )
+                }
+            }
+        }
+    }
+
+    private fun saveOutputLog(
+        fileName: String,
+        content: String,
+        result: MethodChannel.Result,
+    ) {
+        executor.execute {
+            try {
+                val safeName =
+                    File(fileName).name.takeIf {
+                        it.isNotBlank() && it != "." && it != ".."
+                    } ?: "nekosu-output.log"
+                val values =
+                    ContentValues().apply {
+                        put(MediaStore.MediaColumns.DISPLAY_NAME, safeName)
+                        put(MediaStore.MediaColumns.MIME_TYPE, "text/plain")
+                        put(
+                            MediaStore.MediaColumns.RELATIVE_PATH,
+                            Environment.DIRECTORY_DOWNLOADS,
+                        )
+                    }
+                val uri =
+                    requireNotNull(
+                        contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values),
+                    ) { "Unable to create the output file" }
+                val output =
+                    requireNotNull(contentResolver.openOutputStream(uri, "w")) {
+                        "Unable to open the output file"
+                    }
+                output.use { it.write(content.toByteArray(Charsets.UTF_8)) }
+                mainHandler.post { result.success(safeName) }
+            } catch (error: Exception) {
+                mainHandler.post {
+                    result.error(
+                        "output_save_failed",
+                        error.message ?: "Unable to save output log",
                         null,
                     )
                 }

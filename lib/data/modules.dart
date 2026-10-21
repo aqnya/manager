@@ -4,6 +4,7 @@ import 'dart:isolate';
 
 import 'package:flutter/services.dart';
 import 'package:nekosu/core/ncore_ffi.dart';
+import 'package:nekosu/core/output_events.dart';
 
 class ModuleInfo {
   const ModuleInfo({
@@ -104,6 +105,7 @@ class ModuleBridge {
   ModuleBridge._();
 
   static const _platform = MethodChannel('nekosu/modules_platform');
+  static const _outputChannel = EventChannel('nekosu/modules_platform/output');
 
   static Future<ModuleListResult> list() async {
     final envelope = await Isolate.run(() => NcoreFfi.moduleList());
@@ -174,6 +176,48 @@ class ModuleBridge {
   static Future<ModuleCommandResult> action(String id) async {
     final envelope = await Isolate.run(() => NcoreFfi.moduleAction(id));
     return ModuleCommandResult.fromEnvelope(envelope);
+  }
+
+  static Stream<OutputEvent> installOutput(String path) {
+    return _runOutput('install', path);
+  }
+
+  static Stream<OutputEvent> actionOutput(String id) {
+    return _runOutput('action', id);
+  }
+
+  static Stream<OutputEvent> _runOutput(String operation, String argument) {
+    final events = _outputChannel.receiveBroadcastStream({
+      'operation': operation,
+      'argument': argument,
+    });
+    return _decodeOutputEvents(events);
+  }
+
+  static Stream<OutputEvent> _decodeOutputEvents(
+    Stream<dynamic> events,
+  ) async* {
+    await for (final raw in events) {
+      final event = _decodeOutput(raw);
+      if (event == null) continue;
+      yield event;
+      if (event is OutputFinished) return;
+    }
+  }
+
+  static OutputEvent? _decodeOutput(Object? raw) {
+    if (raw is! Map) return null;
+    switch (raw['type']) {
+      case 'line':
+        final text = raw['text']?.toString();
+        if (text == null || text.isEmpty) return null;
+        return OutputChunk(text);
+      case 'done':
+        final parsed = int.tryParse(raw['code']?.toString() ?? '');
+        return OutputFinished(parsed ?? -1);
+      default:
+        return null;
+    }
   }
 
   static Future<ModuleCommandResult> prepareWebUi(String id) async {

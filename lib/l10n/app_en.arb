@@ -259,6 +259,18 @@
   "modulesAction": "Action",
   "modulesWebUi": "WebUI",
   "webUiLoadFailed": "Unable to load WebUI",
+  "outputSaveLog": "Save log",
+  "outputLogSaved": "Log saved as {name}",
+  "@outputLogSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "outputLogSaveFailed": "Failed to save log",
+  "outputWaiting": "Waiting for output...",
+  "outputNoOutput": "No output",
   "modulesMore": "More",
   "modulesRemove": "Remove",
   "modulesUndoRemove": "Undo",
