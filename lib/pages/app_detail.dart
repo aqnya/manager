@@ -333,8 +333,6 @@ class _AppDetailPageState extends State<AppDetailPage> {
                     )
                   : const SizedBox.shrink(),
             ),
-            const SizedBox(height: 18),
-            const _UnmountModulesCard(),
           ],
         ),
       ),
@@ -545,17 +543,6 @@ class _ProfileModeSelector extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Expanded(
-          child: Tooltip(
-            message: l10n.profileTemplateUnavailable,
-            child: _ProfileModeSegment(
-              label: l10n.profileModeTemplate,
-              selected: false,
-              enabled: false,
-            ),
-          ),
-        ),
-        const SizedBox(width: 4),
-        Expanded(
           child: _ProfileModeSegment(
             label: l10n.profileModeCustom,
             selected: mode == _ProfileMode.custom,
@@ -704,61 +691,6 @@ class _CapsuleSwitch extends StatelessWidget {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _UnmountModulesCard extends StatelessWidget {
-  const _UnmountModulesCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return const CardGroup(children: [_UnmountModulesRow()]);
-  }
-}
-
-class _UnmountModulesRow extends StatelessWidget {
-  const _UnmountModulesRow();
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final l10n = AppLocalizations.of(context)!;
-    final foreground = scheme.onSurface.withValues(alpha: 0.4);
-    final secondary = scheme.onSurfaceVariant.withValues(alpha: 0.36);
-
-    return Semantics(
-      enabled: false,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.unmountModules,
-                    style: textTheme.bodyLarge?.copyWith(color: foreground),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    l10n.unmountModulesSummary,
-                    style: textTheme.bodyMedium?.copyWith(color: secondary),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            _CapsuleSwitch(
-              value: false,
-              enabled: false,
-              label: l10n.unmountModules,
-            ),
-          ],
         ),
       ),
     );
