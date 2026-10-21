@@ -179,14 +179,6 @@ class _AboutHero extends StatelessWidget {
             textAlign: TextAlign.center,
             style: textTheme.headlineMedium?.copyWith(color: scheme.onSurface),
           ),
-          const SizedBox(height: 4),
-          Text(
-            l10n.aboutTagline,
-            textAlign: TextAlign.center,
-            style: textTheme.bodyMedium?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
-          ),
         ],
       ),
     );
