@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:nekosu/card_group.dart';
 
 /// Horizontal alignment of the popup relative to its trigger.
 enum AppPopupMenuAlignment { start, end }
@@ -122,6 +123,9 @@ class _AppPopupMenuState<T> extends State<AppPopupMenu<T>> {
     } else {
       trigger = InkWell(
         onTap: widget.enabled ? _openMenu : null,
+        onHighlightChanged: widget.enabled
+            ? CardItem.pressReporterOf(context)
+            : null,
         child: widget.child!,
       );
       final tooltip = widget.tooltip;

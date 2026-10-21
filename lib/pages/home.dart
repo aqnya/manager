@@ -370,6 +370,7 @@ class _AboutItem extends StatelessWidget {
       children: [
         InkWell(
           onTap: () {},
+          onHighlightChanged: CardItem.pressReporterOf(context),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(

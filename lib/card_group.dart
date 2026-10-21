@@ -1,17 +1,30 @@
 import 'package:flutter/material.dart';
 
-BorderRadius groupShape(int index, int total, {double r = 20}) {
+const double cardGroupOuterRadius = 24;
+const double cardGroupInnerRadius = 4;
+const double cardGroupGap = 4;
+
+const Duration cardGroupMotionDuration = Duration(milliseconds: 250);
+const Curve cardGroupMotionCurve = Curves.easeInOutCubic;
+
+BorderRadius groupShape(
+  int index,
+  int total, {
+  double r = cardGroupOuterRadius,
+}) {
   if (total <= 1) return BorderRadius.circular(r);
-  if (index == 0)
+  if (index == 0) {
     return BorderRadius.only(
       topLeft: Radius.circular(r),
       topRight: Radius.circular(r),
     );
-  if (index == total - 1)
+  }
+  if (index == total - 1) {
     return BorderRadius.only(
       bottomLeft: Radius.circular(r),
       bottomRight: Radius.circular(r),
     );
+  }
   return BorderRadius.zero;
 }
 
@@ -33,43 +46,57 @@ class ListRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final headlineStyle = textTheme.bodyLarge;
-    final subStyle = textTheme.bodyMedium?.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final secondaryColor = scheme.onSurfaceVariant;
+    final pressReporter = onTap == null
+        ? null
+        : CardItem.pressReporterOf(context);
 
     return InkWell(
       onTap: onTap,
+      onHighlightChanged: pressReporter,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            icon,
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DefaultTextStyle.merge(
-                    style: headlineStyle ?? const TextStyle(),
-                    child: headline,
-                  ),
-                  if (supporting != null) ...[
-                    const SizedBox(height: 2),
-                    DefaultTextStyle.merge(
-                      style: subStyle ?? const TextStyle(),
-                      child: supporting!,
-                    ),
-                  ],
-                ],
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 32),
+          child: Row(
+            children: [
+              IconTheme.merge(
+                data: IconThemeData(color: secondaryColor),
+                child: icon,
               ),
-            ),
-            const SizedBox(width: 8),
-            trailing,
-          ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    DefaultTextStyle.merge(
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: scheme.onSurface,
+                      ),
+                      child: headline,
+                    ),
+                    if (supporting != null) ...[
+                      const SizedBox(height: 2),
+                      DefaultTextStyle.merge(
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: secondaryColor,
+                        ),
+                        child: supporting!,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconTheme.merge(
+                data: IconThemeData(color: secondaryColor),
+                child: trailing,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -78,6 +105,7 @@ class ListRow extends StatelessWidget {
 
 class CardGroup extends StatelessWidget {
   final List<Widget> children;
+
   const CardGroup({super.key, required this.children});
 
   @override
@@ -86,17 +114,23 @@ class CardGroup extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        spacing: 2,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          for (int i = 0; i < children.length; i++)
-            CardItem(index: i, total: children.length, child: children[i]),
+          for (int index = 0; index < children.length; index++) ...[
+            if (index > 0) const SizedBox(height: cardGroupGap),
+            CardItem(
+              index: index,
+              total: children.length,
+              child: children[index],
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-class CardItem extends StatelessWidget {
+class CardItem extends StatefulWidget {
   final int index;
   final int total;
   final Widget child;
@@ -108,18 +142,83 @@ class CardItem extends StatelessWidget {
     required this.child,
   });
 
+  /// Forward a child InkWell's onHighlightChanged here.
+  static ValueChanged<bool>? pressReporterOf(BuildContext context) {
+    return context
+        .dependOnInheritedWidgetOfExactType<_CardItemScope>()
+        ?.onPressChanged;
+  }
+
+  @override
+  State<CardItem> createState() => _CardItemState();
+}
+
+class _CardItemState extends State<CardItem> {
+  bool _pressed = false;
+
+  void _reportPress(bool pressed) {
+    if (_pressed == pressed) return;
+    setState(() => _pressed = pressed);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.surfaceBright;
-    return ClipRRect(
-      borderRadius: groupShape(index, total),
-      child: ColoredBox(
-        color: color,
-        child: Material(
-          type: MaterialType.transparency,
-          child: SizedBox(width: double.infinity, child: child),
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final outerRadius = BorderRadius.circular(cardGroupOuterRadius);
+    final shape = _pressed
+        ? outerRadius
+        : BorderRadius.vertical(
+            top: Radius.circular(
+              widget.index == 0 ? cardGroupOuterRadius : cardGroupInnerRadius,
+            ),
+            bottom: Radius.circular(
+              widget.index == widget.total - 1
+                  ? cardGroupOuterRadius
+                  : cardGroupInnerRadius,
+            ),
+          );
+
+    return AnimatedContainer(
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : cardGroupMotionDuration,
+      curve: cardGroupMotionCurve,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: shape,
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: ListTileTheme(
+          data: theme.listTileTheme.copyWith(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
+            ),
+            titleTextStyle: theme.textTheme.bodyLarge?.copyWith(
+              color: scheme.onSurface,
+            ),
+            subtitleTextStyle: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          child: _CardItemScope(
+            onPressChanged: _reportPress,
+            child: SizedBox(width: double.infinity, child: widget.child),
+          ),
         ),
       ),
     );
   }
+}
+
+class _CardItemScope extends InheritedWidget {
+  const _CardItemScope({required this.onPressChanged, required super.child});
+
+  final ValueChanged<bool> onPressChanged;
+
+  @override
+  bool updateShouldNotify(_CardItemScope oldWidget) => false;
 }
