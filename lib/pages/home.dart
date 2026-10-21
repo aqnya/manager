@@ -72,15 +72,18 @@ class _HomeScreenContent extends StatelessWidget {
             elevation: 0,
           ),
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(16, 12, 16, navBarClearance),
+            padding: EdgeInsets.fromLTRB(0, 12, 0, navBarClearance),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _StatusCard(
-                    status: installStatus,
-                    isGki: isGki,
-                    managerVersion: managerVersion,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _StatusCard(
+                      status: installStatus,
+                      isGki: isGki,
+                      managerVersion: managerVersion,
+                    ),
                   ),
                   const SizedBox(height: 13),
                   _SectionLabel(text: l10n.deviceAndKernel),
@@ -318,7 +321,9 @@ class _DeviceInfoListState extends State<_DeviceInfoList> {
       _InfoEntry(label: l10n.fingerprint, value: _fingerprint),
     ];
 
-    return _SegmentedList(entries: entries);
+    return CardGroup(
+      children: [for (final entry in entries) _DeviceInfoRow(entry: entry)],
+    );
   }
 }
 
@@ -329,43 +334,25 @@ class _InfoEntry {
   final String value;
 }
 
-class _SegmentedList extends StatelessWidget {
-  const _SegmentedList({required this.entries});
+class _DeviceInfoRow extends StatelessWidget {
+  const _DeviceInfoRow({required this.entry});
 
-  final List<_InfoEntry> entries;
+  final _InfoEntry entry;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (int index = 0; index < entries.length; index++) ...[
-          if (index > 0) const SizedBox(height: 2),
-          ClipRRect(
-            borderRadius: groupShape(index, entries.length),
-            child: ColoredBox(
-              color: scheme.surfaceBright,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(entries[index].label, style: textTheme.bodyLarge),
-                    const SizedBox(height: 2),
-                    Text(entries[index].value, style: textTheme.bodyMedium),
-                  ],
-                ),
-              ),
-            ),
-          ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(entry.label, style: textTheme.bodyLarge),
+          const SizedBox(height: 2),
+          Text(entry.value, style: textTheme.bodyMedium),
         ],
-      ],
+      ),
     );
   }
 }
@@ -379,39 +366,38 @@ class _AboutItem extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
-    return Material(
-      color: scheme.surfaceBright,
-      borderRadius: BorderRadius.circular(20),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {},
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(l10n.aboutCardTitle, style: textTheme.titleSmall),
-                    const SizedBox(height: 2),
-                    Text(
-                      l10n.aboutCardDescription,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: textTheme.bodyMedium,
-                    ),
-                  ],
+    return CardGroup(
+      children: [
+        InkWell(
+          onTap: () {},
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(l10n.aboutCardTitle, style: textTheme.titleSmall),
+                      const SizedBox(height: 2),
+                      Text(
+                        l10n.aboutCardDescription,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Icon(
-                Icons.keyboard_arrow_right_rounded,
-                color: scheme.onSurfaceVariant,
-              ),
-            ],
+                Icon(
+                  Icons.keyboard_arrow_right_rounded,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ],
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }
