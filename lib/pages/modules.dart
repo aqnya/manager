@@ -450,7 +450,7 @@ class _ModuleCardState extends State<_ModuleCard> {
                             if (module.version.isNotEmpty)
                               Text(
                                 '${l10n.modulesVersion}: ${module.version}',
-                                style: theme.textTheme.bodySmall?.copyWith(
+                                style: theme.textTheme.bodyMedium?.copyWith(
                                   color: scheme.onSurfaceVariant,
                                   decoration: textDecoration,
                                 ),
@@ -458,7 +458,7 @@ class _ModuleCardState extends State<_ModuleCard> {
                             if (module.author.isNotEmpty)
                               Text(
                                 '${l10n.modulesAuthor}: ${module.author}',
-                                style: theme.textTheme.bodySmall?.copyWith(
+                                style: theme.textTheme.bodyMedium?.copyWith(
                                   color: scheme.onSurfaceVariant,
                                   decoration: textDecoration,
                                 ),

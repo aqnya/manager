@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:nekosu/app_theme.dart';
 import 'package:nekosu/pages/app_list.dart';
 import 'package:nekosu/pages/home.dart';
 import 'package:nekosu/pages/modules.dart';
@@ -23,8 +24,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  static const _systemFontFamily = 'sans-serif';
-
   @override
   void initState() {
     super.initState();
@@ -77,18 +76,8 @@ class _MyAppState extends State<MyApp> {
           ],
           supportedLocales: const [Locale('en', ''), Locale('zh', '')],
           locale: settings.locale,
-          theme: ThemeData(
-            useMaterial3: true,
-            colorScheme: lightScheme,
-            fontFamily: _systemFontFamily,
-            scaffoldBackgroundColor: lightScheme.surfaceContainer,
-          ),
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            colorScheme: darkScheme,
-            fontFamily: _systemFontFamily,
-            scaffoldBackgroundColor: darkScheme.surfaceContainer,
-          ),
+          theme: AppTheme.build(lightScheme),
+          darkTheme: AppTheme.build(darkScheme),
           themeMode: settings.flutterThemeMode,
           home: const MyHomePage(),
         );

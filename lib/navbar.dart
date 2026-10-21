@@ -106,6 +106,8 @@ class _TabItem extends StatelessWidget {
     final contentColor = selected
         ? scheme.onPrimaryContainer
         : scheme.onSurfaceVariant;
+    final labelStyle = Theme.of(context).textTheme.labelMedium
+        ?.copyWith(color: contentColor, fontWeight: FontWeight.w500);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -135,11 +137,7 @@ class _TabItem extends StatelessWidget {
           const SizedBox(height: 4),
           AnimatedDefaultTextStyle(
             duration: const Duration(milliseconds: 250),
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: contentColor,
-            ),
+            style: labelStyle ?? TextStyle(color: contentColor),
             child: Text(
               tab.label,
               maxLines: 1,

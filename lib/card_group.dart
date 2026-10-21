@@ -33,8 +33,11 @@ class ListRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final subStyle = Theme.of(context).textTheme.bodyMedium
-        ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant);
+    final textTheme = Theme.of(context).textTheme;
+    final headlineStyle = textTheme.bodyLarge;
+    final subStyle = textTheme.bodyMedium?.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
 
     return InkWell(
       // 包一层
@@ -51,12 +54,17 @@ class ListRow extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  headline,
-                  if (supporting != null)
+                  DefaultTextStyle.merge(
+                    style: headlineStyle ?? const TextStyle(),
+                    child: headline,
+                  ),
+                  if (supporting != null) ...[
+                    const SizedBox(height: 2),
                     DefaultTextStyle.merge(
                       style: subStyle ?? const TextStyle(),
                       child: supporting!,
                     ),
+                  ],
                 ],
               ),
             ),

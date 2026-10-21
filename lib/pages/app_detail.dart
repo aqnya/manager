@@ -295,7 +295,7 @@ class _AppIdentityHeader extends StatelessWidget {
                 app.packageName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: textTheme.bodySmall?.copyWith(
+                style: textTheme.bodyMedium?.copyWith(
                   color: scheme.onSurfaceVariant,
                 ),
               ),
