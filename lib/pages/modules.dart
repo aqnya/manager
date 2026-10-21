@@ -209,7 +209,7 @@ class _ModulesPageState extends State<ModulesPage> {
     }
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => WebUiPage(entryPath: entryPath),
+        builder: (context) => WebUiPage(entryPath: entryPath, module: module),
       ),
     );
   }

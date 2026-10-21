@@ -383,6 +383,17 @@ fn ncore_path() -> Option<PathBuf> {
 }
 
 fn root_command(command: &str) -> (i32, String) {
+    let (code, mut output, stderr) = root_command_parts(command);
+    if !stderr.is_empty() {
+        if !output.is_empty() && !output.ends_with('\n') {
+            output.push('\n');
+        }
+        output.push_str(&stderr);
+    }
+    (code, output)
+}
+
+fn root_command_parts(command: &str) -> (i32, String, String) {
     let su = if Path::new("/system/bin/su").is_file() {
         "/system/bin/su"
     } else {
@@ -391,19 +402,39 @@ fn root_command(command: &str) -> (i32, String) {
     let command =
         format!("PATH=/sbin:/system/sbin:/system/bin:/system/xbin; export PATH; {command}");
     match Command::new(su).args(["-c", command.as_str()]).output() {
-        Ok(result) => {
-            let mut output = String::from_utf8_lossy(&result.stdout).into_owned();
-            let stderr = String::from_utf8_lossy(&result.stderr);
-            if !stderr.is_empty() {
-                if !output.is_empty() && !output.ends_with('\n') {
-                    output.push('\n');
-                }
-                output.push_str(&stderr);
-            }
-            (result.status.code().unwrap_or(-1), output)
-        }
-        Err(error) => (-1, format!("root shell unavailable: {error}")),
+        Ok(result) => (
+            result.status.code().unwrap_or(-1),
+            String::from_utf8_lossy(&result.stdout).into_owned(),
+            String::from_utf8_lossy(&result.stderr).into_owned(),
+        ),
+        Err(error) => (
+            -1,
+            String::new(),
+            format!("root shell unavailable: {error}"),
+        ),
     }
+}
+
+fn json_quote(value: &str) -> String {
+    let mut output = String::with_capacity(value.len() + 2);
+    output.push('"');
+    for character in value.chars() {
+        match character {
+            '"' => output.push_str("\\\""),
+            '\\' => output.push_str("\\\\"),
+            '\n' => output.push_str("\\n"),
+            '\r' => output.push_str("\\r"),
+            '\t' => output.push_str("\\t"),
+            '\u{08}' => output.push_str("\\b"),
+            '\u{0c}' => output.push_str("\\f"),
+            character if character < '\u{20}' => {
+                output.push_str(&format!("\\u{:04x}", character as u32));
+            }
+            character => output.push(character),
+        }
+    }
+    output.push('"');
+    output
 }
 
 fn module_ncore_command(arguments: &str) -> Result<String, String> {
@@ -617,4 +648,38 @@ pub extern "C" fn ncore_module_webui(
         buffer,
         capacity,
     )
+}
+
+const WEBUI_COMMAND_LIMIT: usize = 1024 * 1024;
+
+#[unsafe(no_mangle)]
+pub extern "C" fn ncore_webui_exec(
+    command: *const u8,
+    command_length: usize,
+    buffer: *mut u8,
+    capacity: usize,
+) -> isize {
+    init_logging();
+    if command.is_null() || command_length == 0 || command_length > WEBUI_COMMAND_LIMIT {
+        return copy_module_result(
+            "{\"code\":-1,\"stdout\":\"\",\"stderr\":\"Invalid command\"}".to_owned(),
+            buffer,
+            capacity,
+        );
+    }
+    let bytes = unsafe { slice::from_raw_parts(command, command_length) };
+    let Ok(command) = std::str::from_utf8(bytes) else {
+        return copy_module_result(
+            "{\"code\":-1,\"stdout\":\"\",\"stderr\":\"Command is not valid UTF-8\"}".to_owned(),
+            buffer,
+            capacity,
+        );
+    };
+    let (code, stdout, stderr) = root_command_parts(command);
+    let result = format!(
+        "{{\"code\":{code},\"stdout\":{},\"stderr\":{}}}",
+        json_quote(&stdout),
+        json_quote(&stderr),
+    );
+    copy_module_result(result, buffer, capacity)
 }

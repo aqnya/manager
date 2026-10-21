@@ -90,6 +90,9 @@ class NcoreFfi {
   static final _StringArgDart? _moduleWebUi = _lookupStringArg(
     'ncore_module_webui',
   );
+  static final _StringArgDart? _webUiExec = _lookupStringArg(
+    'ncore_webui_exec',
+  );
 
   static final bool available = _ctl != null && _isGki != null;
   static final bool profileApiAvailable =
@@ -240,6 +243,9 @@ class NcoreFfi {
 
   static String? moduleWebUi(String id) =>
       _readModuleStringArg(_moduleWebUi, id, retry: false);
+
+  static String? webUiExec(String command) =>
+      _readModuleStringArg(_webUiExec, command, retry: false);
 
   static bool setProfile({
     required int uid,
