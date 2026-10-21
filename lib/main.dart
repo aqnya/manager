@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:nekosu/app_theme.dart';
+import 'package:nekosu/layout_insets.dart';
 import 'package:nekosu/pages/app_list.dart';
 import 'package:nekosu/pages/home.dart';
 import 'package:nekosu/pages/modules.dart';
@@ -99,6 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final settings = SettingsController.instance;
 
     final List<Widget> _pages = [
       const HomePage(),
@@ -107,39 +109,55 @@ class _MyHomePageState extends State<MyHomePage> {
       const SettingsPage(),
     ];
 
-    return Scaffold(
-      extendBody: true,
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: ModernCapsuleNavBar(
-        selectedIndex: _selectedIndex,
-        onTabSelected: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        tabs: [
-          NavBarTab(
-            label: l10n.homeLabel,
-            icon: const Icon(Icons.home_outlined),
-            activeIcon: const Icon(Icons.home),
-          ),
-          NavBarTab(
-            label: l10n.appsLabel,
-            icon: const Icon(Icons.apps_outlined),
-            activeIcon: const Icon(Icons.apps_rounded),
-          ),
-          NavBarTab(
-            label: l10n.modulesLabel,
-            icon: const Icon(Icons.extension_outlined),
-            activeIcon: const Icon(Icons.extension_rounded),
-          ),
-          NavBarTab(
-            label: l10n.settingsLabel,
-            icon: const Icon(Icons.settings_outlined),
-            activeIcon: const Icon(Icons.settings),
-          ),
-        ],
+    final tabs = [
+      NavBarTab(
+        label: l10n.homeLabel,
+        icon: const Icon(Icons.home_outlined),
+        activeIcon: const Icon(Icons.home),
+      ),
+      NavBarTab(
+        label: l10n.appsLabel,
+        icon: const Icon(Icons.apps_outlined),
+        activeIcon: const Icon(Icons.apps_rounded),
+      ),
+      NavBarTab(
+        label: l10n.modulesLabel,
+        icon: const Icon(Icons.extension_outlined),
+        activeIcon: const Icon(Icons.extension_rounded),
+      ),
+      NavBarTab(
+        label: l10n.settingsLabel,
+        icon: const Icon(Icons.settings_outlined),
+        activeIcon: const Icon(Icons.settings),
+      ),
+    ];
+
+    return AnimatedBuilder(
+      animation: settings,
+      builder: (context, _) => Scaffold(
+        extendBody: settings.floatingNavBar,
+        body: AppNavBarScope(
+          floating: settings.floatingNavBar,
+          child: _pages[_selectedIndex],
+        ),
+        bottomNavigationBar: settings.floatingNavBar
+            ? ModernCapsuleNavBar(
+                selectedIndex: _selectedIndex,
+                onTabSelected: _selectTab,
+                tabs: tabs,
+              )
+            : ModernNavigationBar(
+                selectedIndex: _selectedIndex,
+                onTabSelected: _selectTab,
+                tabs: tabs,
+              ),
       ),
     );
+  }
+
+  void _selectTab(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 }

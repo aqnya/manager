@@ -88,6 +88,42 @@ class ModernCapsuleNavBar extends StatelessWidget {
   }
 }
 
+class ModernNavigationBar extends StatelessWidget {
+  const ModernNavigationBar({
+    super.key,
+    required this.tabs,
+    required this.selectedIndex,
+    required this.onTabSelected,
+  });
+
+  final List<NavBarTab> tabs;
+  final int selectedIndex;
+  final ValueChanged<int> onTabSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return NavigationBar(
+      selectedIndex: selectedIndex,
+      onDestinationSelected: (index) {
+        HapticFeedback.lightImpact();
+        onTabSelected(index);
+      },
+      backgroundColor: scheme.surfaceContainer,
+      surfaceTintColor: Colors.transparent,
+      indicatorColor: scheme.primaryContainer,
+      destinations: [
+        for (final tab in tabs)
+          NavigationDestination(
+            icon: tab.icon,
+            selectedIcon: tab.activeIcon ?? tab.icon,
+            label: tab.label,
+          ),
+      ],
+    );
+  }
+}
+
 class _TabItem extends StatelessWidget {
   const _TabItem({
     required this.tab,

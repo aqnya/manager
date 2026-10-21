@@ -22,6 +22,7 @@ class SettingsController extends ChangeNotifier {
   AppThemeMode themeMode = AppThemeMode.system;
   AppThemeAccent themeAccent = AppThemeAccent.materialYou;
   bool amoled = false;
+  bool floatingNavBar = true;
   String language = 'system';
 
   ThemeMode get flutterThemeMode => switch (themeMode) {
@@ -48,6 +49,7 @@ class SettingsController extends ChangeNotifier {
       themeMode = _themeModeFromIndex(values['themeMode']);
       themeAccent = _accentFromIndex(values['themeColor']);
       amoled = values['amoled'] == true;
+      floatingNavBar = values['floatingNavBar'] != false;
       final savedLanguage = values['language']?.toString();
       if (savedLanguage == 'en' || savedLanguage == 'zh') {
         language = savedLanguage!;
@@ -79,6 +81,13 @@ class SettingsController extends ChangeNotifier {
     amoled = value;
     notifyListeners();
     await _save('amoled_mode', value);
+  }
+
+  Future<void> setFloatingNavBar(bool value) async {
+    if (floatingNavBar == value) return;
+    floatingNavBar = value;
+    notifyListeners();
+    await _save('floating_navbar', value);
   }
 
   Future<void> setLanguage(String value) async {

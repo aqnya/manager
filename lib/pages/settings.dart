@@ -19,7 +19,7 @@ class SettingsPage extends StatelessWidget {
         final scheme = Theme.of(context).colorScheme;
         final l10n = AppLocalizations.of(context)!;
         final settings = SettingsController.instance;
-        final navBarClearance = floatingNavBarClearance(context);
+        final navBarClearance = appNavBarClearance(context);
 
         return Scaffold(
           body: CustomScrollView(
@@ -123,6 +123,15 @@ class SettingsPage extends StatelessWidget {
                           trailing: Switch(
                             value: settings.amoled,
                             onChanged: settings.setAmoled,
+                          ),
+                        ),
+                        ListRow(
+                          icon: const Icon(Icons.bottom_navigation_rounded),
+                          headline: Text(l10n.settingsFloatingNavBar),
+                          supporting: Text(l10n.settingsFloatingNavBarSummary),
+                          trailing: Switch(
+                            value: settings.floatingNavBar,
+                            onChanged: settings.setFloatingNavBar,
                           ),
                         ),
                       ],

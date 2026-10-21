@@ -235,7 +235,7 @@ class _ModulesPageState extends State<ModulesPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final navBarClearance = floatingNavBarClearance(context);
+    final navBarClearance = appNavBarClearance(context);
     final scheme = Theme.of(context).colorScheme;
 
     if (_logVisible) {

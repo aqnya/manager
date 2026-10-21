@@ -172,7 +172,7 @@ class _AppListPageState extends State<AppListPage> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    final navBarClearance = floatingNavBarClearance(context);
+    final navBarClearance = appNavBarClearance(context);
 
     return Scaffold(
       backgroundColor: scheme.surfaceContainer,

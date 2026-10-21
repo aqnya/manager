@@ -153,6 +153,8 @@
   "themeColorGreen": "Catppuccin 绿色",
   "settingsAmoled": "AMOLED 纯黑",
   "settingsAmoledSummary": "深色模式使用纯黑背景",
+  "settingsFloatingNavBar": "悬浮底栏",
+  "settingsFloatingNavBarSummary": "开启胶囊悬浮底栏，关闭后使用常规底栏",
   "settingsAbout": "关于与诊断",
   "settingsAboutDescription": "版本与运行环境信息",
   "settingsExportLogs": "导出日志",

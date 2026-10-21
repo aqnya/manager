@@ -20,7 +20,7 @@ class ListRow extends StatelessWidget {
   final Widget headline;
   final Widget? supporting;
   final Widget trailing;
-  final VoidCallback? onTap; // 加这个
+  final VoidCallback? onTap;
 
   const ListRow({
     super.key,
@@ -28,7 +28,7 @@ class ListRow extends StatelessWidget {
     required this.headline,
     this.supporting,
     this.trailing = const SizedBox.shrink(),
-    this.onTap, // 加这个
+    this.onTap,
   });
 
   @override
@@ -40,7 +40,6 @@ class ListRow extends StatelessWidget {
     );
 
     return InkWell(
-      // 包一层
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
