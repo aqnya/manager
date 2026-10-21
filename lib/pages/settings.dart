@@ -134,7 +134,6 @@ class SettingsPage extends StatelessWidget {
                           icon: const Icon(Icons.info_outline_rounded),
                           headline: Text(l10n.about),
                           supporting: Text(l10n.settingsAboutDescription),
-                          trailing: const Icon(Icons.chevron_right_rounded),
                           onTap: () => _showAbout(context, l10n),
                         ),
                         const _ExportLogsRow(),
