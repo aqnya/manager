@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nekosu/app_popup_menu.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:nekosu/layout_insets.dart';
 import 'package:nekosu/modules.dart';
@@ -565,17 +566,16 @@ class _ModuleCardState extends State<_ModuleCard> {
                       : l10n.modulesRemove,
                 ),
                 const SizedBox(width: 4),
-                PopupMenuButton<_ModuleMenu>(
+                AppPopupMenu<_ModuleMenu>(
                   enabled: !widget.busy,
                   tooltip: l10n.modulesMore,
+                  icon: Icons.more_vert_rounded,
                   onSelected: (_) => widget.onUninstall(),
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
+                  items: [
+                    AppPopupMenuItem(
                       value: _ModuleMenu.uninstall,
-                      child: Text(
-                        l10n.modulesUninstall,
-                        style: TextStyle(color: scheme.error),
-                      ),
+                      label: l10n.modulesUninstall,
+                      destructive: true,
                     ),
                   ],
                 ),

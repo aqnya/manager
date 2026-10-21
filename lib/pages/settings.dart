@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nekosu/app_popup_menu.dart';
 import 'package:nekosu/card_group.dart';
 import 'package:nekosu/ffi.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
@@ -297,36 +298,15 @@ class _SettingsChoice<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return PopupMenuButton<T>(
-      initialValue: value,
+    return AppPopupMenu<T>(
+      alignment: AppPopupMenuAlignment.start,
       onSelected: onChanged,
-      itemBuilder: (context) => [
+      items: [
         for (final choice in choices)
-          PopupMenuItem<T>(
+          AppPopupMenuItem<T>(
             value: choice.value,
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 28,
-                  child: choice.value == value
-                      ? Icon(
-                          Icons.check_rounded,
-                          size: 20,
-                          color: scheme.primary,
-                        )
-                      : null,
-                ),
-                Text(
-                  choice.label,
-                  style: TextStyle(
-                    fontWeight: choice.value == value
-                        ? FontWeight.w500
-                        : FontWeight.normal,
-                  ),
-                ),
-              ],
-            ),
+            label: choice.label,
+            selected: choice.value == value,
           ),
       ],
       child: child,

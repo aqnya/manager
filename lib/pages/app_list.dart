@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:nekosu/app_icon.dart';
+import 'package:nekosu/app_popup_menu.dart';
 import 'package:nekosu/apps.dart';
 import 'package:nekosu/card_group.dart';
 import 'package:nekosu/ffi.dart';
@@ -218,34 +219,21 @@ class _AppListPageState extends State<AppListPage> {
                     icon: const Icon(Icons.search_rounded),
                     tooltip: l10n.searchAppsHint,
                   ),
-                PopupMenuButton<AppFilter>(
-                  icon: const Icon(Icons.filter_list_rounded),
+                AppPopupMenu<AppFilter>(
+                  icon: Icons.filter_list_rounded,
                   tooltip: l10n.filterApps,
                   onSelected: _setFilter,
-                  itemBuilder: (context) => [
+                  items: [
                     for (final filter in AppFilter.values)
-                      PopupMenuItem(
+                      AppPopupMenuItem(
                         value: filter,
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 28,
-                              child: filter == _filter
-                                  ? Icon(
-                                      Icons.check_rounded,
-                                      size: 20,
-                                      color: scheme.primary,
-                                    )
-                                  : null,
-                            ),
-                            Text(switch (filter) {
-                              AppFilter.all => l10n.filterAllApps,
-                              AppFilter.launchable => l10n.filterLaunchableApps,
-                              AppFilter.system => l10n.filterSystemApps,
-                              AppFilter.user => l10n.filterUserApps,
-                            }),
-                          ],
-                        ),
+                        label: switch (filter) {
+                          AppFilter.all => l10n.filterAllApps,
+                          AppFilter.launchable => l10n.filterLaunchableApps,
+                          AppFilter.system => l10n.filterSystemApps,
+                          AppFilter.user => l10n.filterUserApps,
+                        },
+                        selected: filter == _filter,
                       ),
                   ],
                 ),
