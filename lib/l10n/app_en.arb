@@ -95,6 +95,20 @@
   "@aboutCardDescription": {
     "description": "Description of the about card on the home page"
   },
+  "aboutTagline": "Kernel-level root for Android",
+  "aboutInformation": "App information",
+  "aboutVersion": "Version",
+  "aboutChannel": "Build channel",
+  "aboutChannelRelease": "Release",
+  "aboutLicense": "License",
+  "aboutLicenseShort": "GPL-3.0 licensed",
+  "aboutRuntime": "Runtime",
+  "aboutProject": "Project",
+  "aboutRepository": "Repository",
+  "aboutRepositorySummary": "View source code on GitHub",
+  "aboutOpenSource": "Open source licenses",
+  "aboutOpenSourceSummary": "Licenses for bundled open source software",
+  "aboutOpenLinkFailed": "Unable to open the link",
   "appearance": "Appearance",
   "@appearance": {
     "description": "Settings section for appearance"
@@ -285,7 +299,7 @@
     "description": "Description of the floating navigation bar setting"
   },
   "settingsAbout": "About & diagnostics",
-  "settingsAboutDescription": "Version information and runtime details",
+  "settingsAboutDescription": "Version, runtime, and open source information",
   "settingsExportLogs": "Export logs",
   "settingsExportLogsSummary": "Package system logs and NekoSU logs separately in a ZIP for sharing",
   "settingsExportLogsSuccess": "Log archive is ready to save or share",

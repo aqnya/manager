@@ -6,6 +6,7 @@ import 'package:nekosu/card_group.dart';
 import 'package:nekosu/ffi.dart';
 import 'package:nekosu/layout_insets.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
+import 'package:nekosu/pages/about.dart';
 
 enum InstallStatus { installed, needUpdate, needReboot, notInstalled, unknown }
 
@@ -367,7 +368,9 @@ class _AboutItem extends StatelessWidget {
     return CardGroup(
       children: [
         InkWell(
-          onTap: () {},
+          onTap: () => Navigator.of(context).push<void>(
+            MaterialPageRoute(builder: (context) => const AboutPage()),
+          ),
           onHighlightChanged: CardItem.pressReporterOf(context),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

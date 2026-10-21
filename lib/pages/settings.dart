@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nekosu/app_popup_menu.dart';
 import 'package:nekosu/card_group.dart';
-import 'package:nekosu/ffi.dart';
 import 'package:nekosu/l10n/app_localizations.dart';
 import 'package:nekosu/layout_insets.dart';
 import 'package:nekosu/log_export.dart';
+import 'package:nekosu/pages/about.dart';
 import 'package:nekosu/settings_controller.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -174,7 +174,11 @@ class SettingsPage extends StatelessWidget {
                           icon: const Icon(Icons.info_outline_rounded),
                           headline: Text(l10n.about),
                           supporting: Text(l10n.settingsAboutDescription),
-                          onTap: () => _showAbout(context, l10n),
+                          onTap: () => Navigator.of(context).push<void>(
+                            MaterialPageRoute(
+                              builder: (context) => const AboutPage(),
+                            ),
+                          ),
                         ),
                         const _ExportLogsRow(),
                       ],
@@ -186,26 +190,6 @@ class SettingsPage extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  void _showAbout(BuildContext context, AppLocalizations l10n) {
-    final kernel = NcoreFfi.kernelVersion;
-    final module = NcoreFfi.moduleVersion;
-    showAboutDialog(
-      context: context,
-      applicationName: l10n.appTitle,
-      applicationVersion: SettingsController.managerVersion,
-      children: [
-        Text(l10n.settingsAboutDescription),
-        const SizedBox(height: 16),
-        SelectableText(
-          '${l10n.managerVersion}: ${SettingsController.managerVersion}\n'
-          '${l10n.kernelVersion}: ${kernel ?? l10n.unknownValue}\n'
-          '${l10n.moduleVersion}: ${module ?? l10n.unknownValue}',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5),
-        ),
-      ],
     );
   }
 
