@@ -166,7 +166,6 @@ class SettingsPage extends StatelessWidget {
       context: context,
       applicationName: l10n.appTitle,
       applicationVersion: SettingsController.managerVersion,
-      applicationIcon: const Icon(Icons.security_rounded, size: 40),
       children: [
         Text(l10n.settingsAboutDescription),
         const SizedBox(height: 16),
