@@ -66,6 +66,10 @@ android {
         jniLibs {
             useLegacyPackaging = true
         }
+        resources {
+          excludes += "DebugProbesKt.bin"
+          excludes += "kotlin-tooling-metadata.json"
+        }
     }
 }
 
