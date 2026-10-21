@@ -126,7 +126,7 @@ class SettingsPage extends StatelessWidget {
                           ),
                         ),
                         ListRow(
-                          icon: const Icon(Icons.bottom_navigation_rounded),
+                          icon: const Icon(Icons.space_bar_rounded),
                           headline: Text(l10n.settingsFloatingNavBar),
                           supporting: Text(l10n.settingsFloatingNavBarSummary),
                           trailing: Switch(
