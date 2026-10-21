@@ -339,7 +339,7 @@ class _AppRow extends StatelessWidget {
                         app.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: textTheme.titleMedium,
+                        style: textTheme.bodyLarge,
                       ),
                       Text(
                         app.packageName,
