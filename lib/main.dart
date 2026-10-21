@@ -144,7 +144,10 @@ class _MyHomePageState extends State<MyHomePage> {
         extendBody: settings.floatingNavBar,
         body: AppNavBarScope(
           floating: settings.floatingNavBar,
-          child: _pages[_selectedIndex],
+          child: _TabPageSwitcher(
+            index: _selectedIndex,
+            child: _pages[_selectedIndex],
+          ),
         ),
         bottomNavigationBar: settings.floatingNavBar
             ? ModernCapsuleNavBar(
@@ -165,5 +168,26 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+}
+
+class _TabPageSwitcher extends StatelessWidget {
+  const _TabPageSwitcher({required this.index, required this.child});
+
+  final int index;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 70),
+      transitionBuilder: (child, animation) =>
+          FadeTransition(opacity: animation, child: child),
+      layoutBuilder: (currentChild, previousChildren) => Stack(
+        fit: StackFit.expand,
+        children: [...previousChildren, if (currentChild != null) currentChild],
+      ),
+      child: KeyedSubtree(key: ValueKey(index), child: child),
+    );
   }
 }
