@@ -244,12 +244,6 @@ class _ExportLogsRowState extends State<_ExportLogsRow> {
       icon: const Icon(Icons.file_upload_outlined),
       headline: Text(l10n.settingsExportLogs),
       supporting: Text(l10n.settingsExportLogsSummary),
-      trailing: _exporting
-          ? const SizedBox.square(
-              dimension: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : const Icon(Icons.ios_share_rounded),
       onTap: _exporting ? null : _export,
     );
   }
